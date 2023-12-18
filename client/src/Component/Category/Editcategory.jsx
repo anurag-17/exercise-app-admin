@@ -260,7 +260,7 @@ const Editcategory = ({ closeModal, editData, refreshdata }) => {
                         </button>
                         <button
                             type="submit"
-                            className="rounded-[6px] py-1 px-4 max-w-[300px] w-full lg:w-[50%] border bg-[#1f2432] text-white"
+                            className="custom-button rounded-[6px] py-1 px-4 max-w-[300px] w-full lg:w-[50%] border bg-[#1f2432] text-white"
                         >
                             Update
                         </button>

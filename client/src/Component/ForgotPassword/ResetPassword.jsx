@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router";
 import { toast } from "react-toastify";
 import axios from "axios";
 
-import RightSection from "./RightSection";
+import RightSection from "../RightSection";
 import { Link } from "react-router-dom";
 
 
@@ -19,7 +19,7 @@ const ResetPassword = () => {
         e.preventDefault();
         setLoading(true)
         try {
-            const response = await axios.post('/api/auth/resetpassword', password, {
+            const response = await axios.post('/api/auth/resetpassword', {password:password}, {
                 headers: {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${resetToken}`,

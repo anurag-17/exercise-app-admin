@@ -6,9 +6,10 @@ import Login from "./Component/Login";
 import './App.css';
 
 import "react-toastify/dist/ReactToastify.css";
+import ResetPassword from "./Component/ForgotPassword/ResetPassword";
+import ForgotPassword from "./Component/ForgotPassword/ForgotPassword";
+import ChangePassword from "./Component/ChangePassword/Index";
 
-import ForgotPassword from './Component/ForgotPassword';
-import ResetPassword from './Component/ResetPassword';
 
 
 function App() {
@@ -33,6 +34,7 @@ function App() {
 
           <Route path="/login" element={<Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/change-password" element={<ChangePassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
 
           <Route

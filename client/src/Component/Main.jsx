@@ -11,6 +11,8 @@ import DashboardIcon from "./Svg/DashboardIcon";
 import UserIcon from "./Svg/UserIcon";
 import CategoryIcon from "./Svg/CategoryIcon";
 import LogoutIcon from "./Svg/Logout";
+import CloseIcon from "./Svg/CloseIcon";
+import ChangePassword from "./ChangePassword/Index";
 
 export const menus = [
     {
@@ -31,6 +33,12 @@ export const menus = [
         component: <Category />,
         icon: <CategoryIcon />,
     },
+    // {
+    //     id: 3,
+    //     label: "Feedback",
+    //     component: <Category />,
+    //     icon: <CategoryIcon />,
+    // },
 ]
 
 const SideMenu = () => {
@@ -89,16 +97,16 @@ const SideMenu = () => {
                  ${showDrawer ? "block  absolute top-0 left-0 min-h-screen is-show" : "hidden lg:block"}`} >
                     <div className="relative text-white  flex flex-col gap-[5px] cursor-pointer lg:hidden  text-right mr-3 mt-2"
                         onClick={() => setShowDrawer(false)}>
-                        <div className="">X</div>
+                        <div className=""> <CloseIcon/> </div>
                     </div>
                     <div className="">
-                        <div className="flex justify-center items-center whitespace-pre-wrap py-[30px] mt-6">
+                        <div className="flex justify-center items-center whitespace-pre-wrap py-[20px]">
                             <h1 className="2xl:text-[30px] lg:text-[26px] text-[24px] font-semibold  text-center whitespace-nowrap">
                                 Admin Dashboard
                             </h1>
                         </div>
                         <div className="bg-white h-[1px] w-[70%] mx-auto"></div>
-                        <div className="flex flex-col 2xl:gap-8 gap-5 pt-[80px]">
+                        <div className="flex flex-col 2xl:gap-6 gap-3 pt-[60px]">
                             {menus.map((item, index) => (
                                 <div key={index}
                                     className={`pl-6 py-3 mx-5 rounded-md  flex gap-x-3 items-center cursor-pointer  transition-colors font-semibold dash-menu
@@ -112,7 +120,7 @@ const SideMenu = () => {
                                 </div>
                             ))}
                         </div>
-                        <div className="bg-white h-[1px] w-[70%] mx-auto mt-[140px]"></div>
+                        <div className="bg-white h-[1px] w-[70%] mx-auto mt-[100px]"></div>
                     </div>
 
                     <div

@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 
-import RightSection from "./RightSection";
+import RightSection from "../RightSection";
 
 const ForgotPassword = () => {
 
@@ -15,7 +15,7 @@ const ForgotPassword = () => {
         e.preventDefault();
         setLoading(true)
         try {
-            const response = await axios.post('/api/auth/forgotpassword', email, {
+            const response = await axios.post('/api/auth/forgotpassword', {email:email}, {
                 headers: {
                     'Content-Type': 'application/json',
                 },

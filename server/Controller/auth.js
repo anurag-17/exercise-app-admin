@@ -466,6 +466,13 @@ exports.forgotPwd = async (req, res) => {
     user = await User.findOne({ contact });
   }
   if (!user) {
+    if (email) {
+      user = await Admin.findOne({ email });
+    } else {
+      user = await Admin.findOne({ contact });
+    }
+  }
+  if (!user) {
     return res.status(HttpStatus.UNAUTHORIZED).json(StatusMessage.USER_NOT_FOUND);
   }
   const token = generateToken({ email: user.email });
@@ -570,7 +577,69 @@ exports.resetPassword = async (req, res) => {
   }
 }
 
+exports.changeUserPwd = async(req,res)=>{
+  const {id, oldPassword, newPassword} = req.body
+  if (!id || !oldPassword || !newPassword) {
+    return res.status(HttpStatus.BAD_REQUEST).json(StatusMessage.MISSING_DATA);
+  }
+  try {
+    const user = await User.findById(id)
+    if (!user) {
+      return res.status(HttpStatus.UNAUTHORIZED).json(StatusMessage.USER_NOT_FOUND);
+    }
+    const isPasswordMatch = await bcrypt.compare(oldPassword, user.password);
+    if (isPasswordMatch) {
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      const changedPwd = await User.findByIdAndUpdate(id, {password:hashedPassword}) 
+      if (!changedPwd) {
+        return res.status(HttpStatus.BAD_REQUEST).json("User not found.");
+      } else {
+        return res.status(HttpStatus.OK).json(StatusMessage.USER_UPDATED);
 
+      }
+    } else {
+      return res.status(HttpStatus.UNAUTHORIZED).json(StatusMessage.INVALID_CREDENTIALS);
+    }
+
+    
+  } catch (error) {
+    console.log(error);
+    return res.status(HttpStatus.SERVER_ERROR).json(StatusMessage.SERVER_ERROR);
+
+  }
+}
+
+exports.changeAdminPwd = async(req,res)=>{
+  const {id, oldPassword, newPassword} = req.body
+  if (!id || !oldPassword || !newPassword) {
+    return res.status(HttpStatus.BAD_REQUEST).json(StatusMessage.MISSING_DATA);
+  }
+  try {
+    const user = await Admin.findById(id)
+    if (!user) {
+      return res.status(HttpStatus.UNAUTHORIZED).json(StatusMessage.USER_NOT_FOUND);
+    }
+    const isPasswordMatch = await bcrypt.compare(oldPassword, user.password);
+    if (isPasswordMatch) {
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      const changedPwd = await Admin.findByIdAndUpdate(id, {password:hashedPassword}) 
+      if (!changedPwd) {
+        return res.status(HttpStatus.BAD_REQUEST).json("User not found.");
+      } else {
+        return res.status(HttpStatus.OK).json(StatusMessage.USER_UPDATED);
+
+      }
+    } else {
+      return res.status(HttpStatus.UNAUTHORIZED).json(StatusMessage.INVALID_CREDENTIALS);
+    }
+
+    
+  } catch (error) {
+    console.log(error);
+    return res.status(HttpStatus.SERVER_ERROR).json(StatusMessage.SERVER_ERROR);
+
+  }
+}
 
 
 
