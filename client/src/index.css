@@ -1,0 +1,125 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .login-input-label {
+    @apply text-[#262628] font-[400] text-[14px] capitalize;
+  }
+
+  .login-input {
+    @apply px-4 py-2 2xl:h-[48px] h-[40px] border border-[#E4E4E4] bg-white rounded-[3px] text-[#262628] text-[15px] font-[400px] leading-normal focus-visible:outline-none placeholder:text-[14px] placeholder:text-[#262628];
+  }
+
+  .login-button {
+    @apply w-full px-4 py-3 rounded-[6px] flex justify-center items-center border border-theme-color bg-white text-black text-[16px] font-bold h-[40px] focus-visible:outline-none hover:border-white hover:bg-[transparent] hover:text-white;
+  }
+
+  .custom-button {
+    @apply px-4 py-2 rounded-[6px] flex justify-center items-center border border-black text-white bg-[#181824] text-[14px] font-medium focus-visible:outline-none hover:border-white hover:bg-[#070708bd];
+  }
+
+  td {
+    @apply text-[14px] font-[400] py-3 px-5 border-b
+  }
+}
+
+@layer base {
+  html {
+    /* / font-family: 'Montserrat', sans-serif; / */
+    font-family: 'Roboto', sans-serif;
+  }
+}
+
+th,
+td {
+  border: none !important;
+  border-bottom: 1px solid #81828345 !important;
+}
+
+button {
+  transition: 0.3s;
+}
+
+button:hover {
+  webkit-transition: all 350ms ease-in-out 0s;
+  -moz-transition: all 350ms ease-in-out 0s;
+  -ms-transition: all 350ms ease-in-out 0s;
+  -o-transition: all 350ms ease-in-out 0s;
+  transition: all 350ms ease-in-out 0s;
+  opacity: 1;
+}
+
+/* / scroll bar / */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgb(82, 110, 119);
+  border-radius: 6px;
+}
+
+/* / For Firefox /
+/ Note: Firefox supports only scrollbar-color and scrollbar-width /
+/ scrollbar-color: thumb color track color /
+/ scrollbar-width: thin | auto | none / */
+html {
+  scrollbar-color: #fff #f690f66f;
+  scrollbar-width: thin;
+}
+
+
+/* / login-bg / */
+.login-bg {
+  background: linear-gradient(45deg, #343a47, transparent);
+  height: 100vh;
+  width: 100%;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+
+}
+.login-btn{
+  background: linear-gradient(46deg,#2c4783,#4e91b9);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 26px;
+  border:1px solid transparent;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+.login-btn:hover{
+  color: #f3f3f3;
+  background: linear-gradient(46deg,#4e91b9,#2c4783)
+}
+
+.dash-menu svg {
+  fill: white !important;
+  stroke: white !important;
+  height: 20px;
+  width: 20px;
+}
+
+.custom-input {
+  filter: drop-shadow(-2.828px 2.828px 1.5px rgba(0, 0, 0, .05));
+  height: 50px;
+  /* background-color: #fff; */
+  border-color: #f3f3f3;
+  border-radius: 10px;
+}
+.custom-input:focus{
+  border: 1px solid #2c4783;
+}
+.is-show{
+  transition:  show ;
+  transform: translateX(0);
+}
+
+.drawer {
+  transition: transform 0.3s ease-in-out; /* You can adjust the duration and easing function */
+}
+
