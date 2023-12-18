@@ -3,8 +3,6 @@ import axios from "axios";
 import { Dialog, Transition } from "@headlessui/react";
 import Pagination from "../Pagination/Index";
 import DeleteUser from "./DeleteUser";
-import EditUser from "./EditUser";
-import AddUser from "./AddUser";
 import Loader from "../WebsiiteLoader/Index";
 
 export const headItems = ["S. No.", "Name", " Contact No", "Email", "Action"]

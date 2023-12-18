@@ -5,6 +5,7 @@ const { generateToken, verifyToken } = require("../Utils/jwt");
 const Category = require("../Model/Category");
 
 const uploadOnS3 = require("../Utils/awsS3");
+const sendEmail = require("../Utils/SendEmail");
 const HttpStatus = {
   OK: 200,
   BAD_REQUEST: 400,
@@ -38,8 +39,8 @@ exports.verifyUser = async (req, res) => {
       return res.status(HttpStatus.UNAUTHORIZED).json({
         error: StatusMessage.UNAUTHORIZED_ACCESS // Include the redirect path in the response
       });
-    }else{
-      return res.status
+    } else {
+      return res.status(HttpStatus.OK).json({ message: 'Verification successful' });
     }
     // If verification succeeds, proceed with other actions or return success
     // For example:
@@ -177,26 +178,11 @@ exports.userLogin = async (req, res) => {
 exports.deleteUser = async (req, res) => {
   try {
     const userId = req.params.id; // Accessing the ID from URL params
-    const authHeader = req.headers.authorization;
 
     if (!userId) {
       return res.status(HttpStatus.BAD_REQUEST).json(StatusMessage.MISSING_DATA);
     }
 
-    let token = '';
-
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      // Remove 'Bearer ' from the beginning to get the token
-      token = authHeader.slice(7);
-    } else {
-      // Handle cases where the token is not present or not in the expected format
-      return res.status(HttpStatus.UNAUTHORIZED).json(StatusMessage.UNAUTHORIZED_ACCESS);
-    }
-
-    // Verify the token
-    if (!verifyToken(token)) {
-      return res.status(HttpStatus.UNAUTHORIZED).json(StatusMessage.UNAUTHORIZED_ACCESS);
-    }
 
     // Token is valid, proceed with user deletion
     const deletedUser = await User.findByIdAndDelete(userId);
@@ -214,23 +200,12 @@ exports.deleteUser = async (req, res) => {
 exports.updateUser = async (req, res) => {
   try {
     const { id, updatedDetails } = req.body;
-    const authHeader = req.headers.authorization;
+
 
     if (!id || !updatedDetails) {
       return res.status(HttpStatus.BAD_REQUEST).json(StatusMessage.MISSING_DATA);
     }
 
-    let token = '';
-
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      token = authHeader.slice(7);
-    } else {
-      return res.status(HttpStatus.UNAUTHORIZED).json(StatusMessage.UNAUTHORIZED_ACCESS);
-    }
-
-    if (!verifyToken(token)) {
-      return res.status(HttpStatus.UNAUTHORIZED).json(StatusMessage.UNAUTHORIZED_ACCESS);
-    }
 
     if (updatedDetails.password) {
       // Hash the new password before updating
@@ -261,18 +236,7 @@ exports.viewUser = async (req, res) => {
     const page = parseInt(req.query.page) || 1; // Default to page 1 if not specified
     const limit = parseInt(req.query.limit) || 1000; // Default limit to 10 if not specified
     const search = req.query.search || "";
-    const authHeader = req.headers.authorization;
-    let token = '';
 
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      token = authHeader.slice(7);
-    } else {
-      return res.status(HttpStatus.UNAUTHORIZED).json(StatusMessage.UNAUTHORIZED_ACCESS);
-    }
-
-    if (!verifyToken(token)) {
-      return res.status(HttpStatus.UNAUTHORIZED).json(StatusMessage.UNAUTHORIZED_ACCESS);
-    }
     if (!page || !limit) {
       return res.status(HttpStatus.BAD_REQUEST).json(StatusMessage.MISSING_PAGE_PARAMS);
     }
@@ -360,10 +324,8 @@ exports.addCategory = async (req, res) => {
   try {
 
     const { category, file, video } = req.body;
-    
-    const authHeader = req.headers.authorization;
 
-    if (!category || !file  ||(!Array.isArray(video) || video.length == 0)) {
+    if (!category || !file || (!Array.isArray(video) || video.length == 0)) {
       return res.status(HttpStatus.BAD_REQUEST).json("Missing some data.");
     }
 
@@ -398,7 +360,7 @@ exports.addCategory = async (req, res) => {
     else if (error.code === 11000 && error.keyPattern && error.keyPattern.file === 1) {
       return res.status(HttpStatus.BAD_REQUEST).json(StatusMessage.DUPLICATE_DATA);
     }
-    else{
+    else {
       return res.status(HttpStatus.BAD_REQUEST).json(error);
     }
     // Handle errors
@@ -411,28 +373,11 @@ exports.addCategory = async (req, res) => {
 exports.deleteCategory = async (req, res) => {
   try {
     const deleteID = req.params.id;
-    const authHeader = req.headers.authorization
+
     if (!deleteID) {
       return res.status(HttpStatus.BAD_REQUEST).json("Missing ID.");
     }
-    let token = '';
 
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      // Remove 'Bearer ' from the beginning to get the token
-      token = authHeader.slice(7);
-    }
-    else {
-      if (!authHeader) {
-
-        return res.status(HttpStatus.UNAUTHORIZED).json(StatusMessage.UNAUTHORIZED_ACCESS);
-      } else {
-        token = authHeader
-      }
-      // Handle cases where the token is not present or not in the expected format
-    }
-    if (!verifyToken(token)) {
-      return res.status(HttpStatus.UNAUTHORIZED).json(StatusMessage.UNAUTHORIZED_ACCESS);
-    }
     const deleteCat = await Category.findByIdAndDelete(deleteID)
     if (!deleteCat) {
       return res.status(HttpStatus.BAD_REQUEST).json("Category not found.");
@@ -447,25 +392,11 @@ exports.deleteCategory = async (req, res) => {
 exports.updateCategory = async (req, res) => {
   try {
     const { id, updatedDetails } = req.body;
-    const authHeader = req.headers.authorization;
+
 
     if (!id || !updatedDetails) {
       return res.status(HttpStatus.BAD_REQUEST).json(StatusMessage.MISSING_DATA);
     }
-
-    let token = '';
-
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      token = authHeader.slice(7);
-    } else {
-      return res.status(HttpStatus.UNAUTHORIZED).json(StatusMessage.UNAUTHORIZED_ACCESS);
-    }
-
-    if (!verifyToken(token)) {
-      return res.status(HttpStatus.UNAUTHORIZED).json(StatusMessage.UNAUTHORIZED_ACCESS);
-    }
-
-
 
     const updatedCategory = await Category.findByIdAndUpdate(id, updatedDetails, { new: true });
 
@@ -482,23 +413,7 @@ exports.updateCategory = async (req, res) => {
 };
 exports.getCategoryById = async (req, res) => {
   try {
-    const _id  = req.params.id;
-    let token = "";
-
-    const authHeader = req.headers.authorization;
-    if (!authHeader) {
-      return res.status(HttpStatus.UNAUTHORIZED).json(StatusMessage.UNAUTHORIZED_ACCESS);
-    }
-
-    if (authHeader.startsWith('Bearer ')) {
-      token = authHeader.slice(7);
-    } else {
-      token = authHeader;
-    }
-
-    if (!verifyToken(token)) {
-      return res.status(HttpStatus.UNAUTHORIZED).json(StatusMessage.UNAUTHORIZED_ACCESS);
-    }
+    const _id = req.params.id;
 
     const categoryData = await Category.findById(_id);
     if (!categoryData) {
@@ -517,18 +432,7 @@ exports.viewCategory = async (req, res) => {
     const page = parseInt(req.query.page) || 1; // Default to page 1 if not specified
     const limit = parseInt(req.query.limit) || 1000; // Default limit to 10 if not specified
     const search = req.query.search || "";
-    const authHeader = req.headers.authorization;
-    let token = '';
 
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      token = authHeader.slice(7);
-    } else {
-      return res.status(HttpStatus.UNAUTHORIZED).json(StatusMessage.UNAUTHORIZED_ACCESS);
-    }
-
-    if (!verifyToken(token)) {
-      return res.status(HttpStatus.UNAUTHORIZED).json(StatusMessage.UNAUTHORIZED_ACCESS);
-    }
     if (!page || !limit) {
       return res.status(HttpStatus.BAD_REQUEST).json(StatusMessage.MISSING_PAGE_PARAMS);
     }
@@ -565,8 +469,109 @@ exports.forgotPwd = async (req, res) => {
     return res.status(HttpStatus.UNAUTHORIZED).json(StatusMessage.USER_NOT_FOUND);
   }
   const token = generateToken({ email: user.email });
-  
+  const mailOptions = {
+    from: "akash.hardia@gmail.com",
+    to: user.email,
+    subject: "Reset Password Link",
+    text: `<h2>Hello! ${user.name} </h2>
+    <h3>Please follow the link to reset your password: http://50.17.174.239/resetpassword/${token}</h3>
+    <h3>Thanks and regards</h3>
+    `
+  };
+
+  try {
+    const info = await sendEmail(mailOptions);
+    console.log("Email sent:", info);
+    return res.status(200).json("Reset link sent to registered mail.");
+  } catch (error) {
+    console.log("Error sending email:", error);
+    return res.status(500).json({ error: "Failed to send email" });
+  }
 }
+
+
+exports.resetPassword = async (req, res) => {
+  const { password } = req.body
+  let hashedPassword
+  if (!password) {
+    return res.status(HttpStatus.BAD_REQUEST).json(StatusMessage.MISSING_DATA);
+   
+  }
+  else{
+     hashedPassword = await bcrypt.hash(password, 10)
+  }
+  const authHeader = req.headers.authorization;
+  let token = '';
+  let user = ''
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    token = authHeader.slice(7);
+  } else {
+    token = authHeader
+  }
+  // console.log(token);
+  if (!token) {
+    return res
+      .status(401)
+      .json({ message: "Please login to access this resource" });
+  } else {
+    const decodedData = verifyToken(token);
+    //   console.log(decodedData);
+    if (!decodedData) {
+      return res
+      .status(HttpStatus.BAD_REQUEST)
+      .json(StatusMessage.USER_NOT_FOUND);
+    }
+    user = await User.findOne({ email: decodedData?.email });
+    if (user === null) {
+      user = await Admin.findOne({ email: decodedData?.email });
+    }
+    const role = user.role
+    const id = user._id?.toString(); // Accessing _id using dot notation
+    // console.log(userId);
+   console.log(role);
+   if (!role) {
+    return res
+    .status(HttpStatus.BAD_REQUEST)
+    .json(StatusMessage.USER_NOT_FOUND);
+   }
+   if (role === "Admin") {
+    try {
+      const updatedUser = await Admin.findByIdAndUpdate(
+        id, // pass the ID directly
+        { password: hashedPassword }, // update only the password field
+        { new: true }
+      );
+    if (!updatedUser) {
+      return res.status(HttpStatus.BAD_REQUEST).json("User not found.");
+    }
+
+    return res.status(HttpStatus.OK).json(StatusMessage.USER_UPDATED);
+    } catch (error) {
+      return res.status(HttpStatus.BAD_REQUEST).json("Error updating password.")
+    }
+   }
+   if (role === "User") {
+    try {
+      const updatedUser = await User.findByIdAndUpdate(
+        id, // pass the ID directly
+        { password: hashedPassword }, // update only the password field
+        { new: true }
+      );
+    if (!updatedUser) {
+      return res.status(HttpStatus.BAD_REQUEST).json("User not found.");
+    }
+
+    return res.status(HttpStatus.OK).json(StatusMessage.USER_UPDATED);
+    } catch (error) {
+      return res.status(HttpStatus.BAD_REQUEST).json("Error updating password.")
+    }
+   }
+    // console.log("user", user._id);
+  }
+}
+
+
+
 
 
 

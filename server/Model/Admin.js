@@ -11,6 +11,10 @@ const adminSchema = new mongoose.Schema({
         required: [true, "Provide passcode"],
         
     },
+    "role":{
+        type:String,
+        default: "Admin"
+    }
 })
 const Admin = mongoose.model("Admin", adminSchema)
 module.exports = Admin;

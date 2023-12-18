@@ -1,16 +1,12 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-// import bgImg from "../assets/bg-img.svg"
-import bgImg from "../assets/gym.jpg"
-import Loader from "./WebsiiteLoader/Index";
+import RightSection from "./RightSection";
+
 
 const Login = () => {
 
-    // const base_url = process.env.BASE_URL
-
-    // console.log(base_url)
     const navigate = useNavigate()
     const [loginDetails, setLoginDetails] = useState({
         email: '',
@@ -18,20 +14,17 @@ const Login = () => {
     });
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setLoading] = useState(false);
-    const [error, setError] = useState("");
 
     const InputHandler = (e) => {
         setLoginDetails({ ...loginDetails, [e.target.name]: e.target.value })
     }
     useEffect(() => {
-        // setLoadingBtn(true)
         sessionStorage.removeItem("sessionToken")
 
     }, [])
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        // navigate("/admindashboard")
         setLoading(true)
         try {
             const response = await axios.post('/api/auth/adminlogin', loginDetails, {
@@ -41,21 +34,17 @@ const Login = () => {
             });
 
             if (response.status === 200) {
-                // console.log('Login successful');
                 toast.success("Login successful!")
                 setLoading(false)
                 sessionStorage.setItem("sessionToken", JSON.stringify(response.data.token))
-                // console.log(response.data.token);
                 navigate("/admindashboard")
             } else {
-                setError('Invalid credentials');
                 toast.error("Invalid credentials!")
                 sessionStorage.removeItem("sessionToken")
                 setLoading(false)
             }
         } catch (error) {
             console.error('Error during login:', error);
-            setError("Login failed please try again!")
             toast.error("Login failed please try again!")
             sessionStorage.removeItem("sessionToken")
 
@@ -70,7 +59,7 @@ const Login = () => {
                     <div
                         className="relative flex flex-col 2xl:gap-x-20 xl:gap-x-10 gap-x-7 min-h-screen justify-center lg:shadow-none  items-center lg:flex-row space-y-8 md:space-y-0 w-[100%] px-[10px]bg-white lg:px-[40px] py-[20px] md:py-[40px] "
                     >
-                        
+
                         <div className="w-[100%] lg:w-[60%] xl:w-[50%]">
                             <form action="" className="" onSubmit={handleSubmit}>
                                 <div className="flex flex-col gap-4 justify-center p-8 lg:p-14 md:max-w-[80%] lg:w-full lg:max-w-[100%] mx-auto ">
@@ -81,7 +70,6 @@ const Login = () => {
                                         </p>
                                     </div>
                                     <div className="md:py-2">
-                                        {/* <span className="login-input-label">Email</span> */}
                                         <input
                                             type="email"
                                             name="email"
@@ -93,14 +81,13 @@ const Login = () => {
                                             required />
                                     </div>
                                     <div className="">
-                                        {/* <span className="login-input-label">Password</span> */}
                                         <input
                                             type={showPassword ? 'text' : 'password'}
                                             name="password"
                                             placeholder="Password"
                                             className="login-input w-full mt-2 custom-input"
                                             onChange={InputHandler}
-                                            minLength={4}
+                                            minLength={8}
                                             required />
                                         <div className="flex items-center mt-4 px-2 cursor-pointer">
                                             <input
@@ -118,23 +105,19 @@ const Login = () => {
                                         <button
                                             type="submit"
                                             disabled={isLoading}
-                                            className="w-full bg-[#1f2432] font-medium text-white p-2 rounded-lg mb-6 hover:bg-white hover:border hover:border-gray-300 h-[50px] login-btn"
+                                            className="w-full bg-[#1f2432] font-medium text-white p-2 rounded-lg  hover:bg-white hover:border hover:border-gray-300 h-[50px] login-btn"
                                         >
-                                           { isLoading ? "Loading.." : "Sign In"} 
+                                            {isLoading ? "Loading.." : "Sign In"}
                                         </button>
+                                        <Link to="/forgot-password">
+                                            <div className="text-[16px] font-medium underline text-center py-3 cursor-password">Forgot password</div>
+                                        </Link>
                                     </div>
 
                                 </div>
                             </form>
                         </div>
-
-                        <div className="block lg:w-[50%] px-[10px] lg:px-0">
-                            <img
-                                src={bgImg}
-                                alt="img"
-                                className="w-full h-auto mx-auto"
-                            />
-                        </div>
+                        <RightSection />
                     </div>
                 </div>
             </div>

@@ -210,7 +210,7 @@ const Category = () => {
             <p className=" text-[24px] font-semibold text-left ">Category</p>
             <div className="flex gap-x-7 lg:gap-x-5 md:flex-auto flex-wrap gap-y-3  items-center justify-center md:justify-end">
               <div className="border border-[gray] rounded-[5px] bg-[#302f2f82]] flex justify-center items-center h-[32px] pl-[10px] md:w-auto w-full">
-                <input type="text " className=" focus-visible:outline-none border-none w-full rounded-[5px]  text-[15px]"
+                <input type="text " className=" focus-visible:outline-none border-none w-full rounded-[5px] font-normal  text-[15px]"
                   value={searchText}
                   onChange={handleSearchInput}
                   onKeyDown={handleKeyDown}
@@ -246,10 +246,10 @@ const Category = () => {
                   <tr key={index}>
                     {/* {console.log(allData?.pagination?.currentPage)} */}
                     <td className="text-[14px] font-[400] py-3 px-5">{(index + 1) + (10 * (allData?.pagination?.currentPage - 1))}</td>
-                    <td className="text-[14px] font-[400] py-3 px-5">{items?.category}</td>
+                    <td className="text-[14px] font-[400] py-3 px-5 capitalize">{items?.category}</td>
                     <td className="text-[14px] font-[400] py-3 px-5">
                       <div className="cursor-pointer" onClick={() => handleImage(items?.file)}>
-                        <img src={items?.file} alt="fiteness" className="max-w-[100px]" />
+                        <img src={items?.file} alt="fiteness" className="max-w-[100px] max-h-[100px]" />
                       </div>
                     </td>
                     <td className="text-[14px] font-[400] py-3 px-5 cursor-pointer text-[blue]">
@@ -257,7 +257,8 @@ const Category = () => {
                         Array.isArray(items.video) && items.video?.length > 0 &&
                         items.video.map((iter, inde) => {
                           return (
-                            <div className="whitespace-nowrap" onClick={() => handleVideo(iter)}>{inde + 1} Video</div>
+                            <div className="whitespace-nowrap" key={inde} 
+                            onClick={() => handleVideo(iter)}> {inde + 1} Video</div>
 
                           )
                         })

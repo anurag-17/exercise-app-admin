@@ -1,7 +1,6 @@
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { Fragment, useState } from "react";
+import {useNavigate } from "react-router-dom";
 
-import logo from "../assets/logo.svg"
 import Dashboard from "./Dashboard";
 import { useEffect } from "react";
 import axios from "axios";
@@ -11,7 +10,6 @@ import Category from "./Category/Category";
 import DashboardIcon from "./Svg/DashboardIcon";
 import UserIcon from "./Svg/UserIcon";
 import CategoryIcon from "./Svg/CategoryIcon";
-import { SignoutIcon } from "./Svg/SignoutIcon";
 import LogoutIcon from "./Svg/Logout";
 
 export const menus = [
@@ -43,7 +41,7 @@ const SideMenu = () => {
     const navigate = useNavigate()
     useEffect(() => {
         if (token) {
-            // verify()
+            verify()
         }
         else {
             navigate("/")
@@ -131,12 +129,12 @@ const SideMenu = () => {
                 <div className=" bg-[#f3f3f3] w-full  " >
 
                     {menus.map((item, index) => (
-                        <>
+                        <Fragment key={index}>
                             {
                                 ComponentId === item.id &&
                                 item.component
                             }
-                        </>
+                        </Fragment>
                     ))}
 
                 </div>

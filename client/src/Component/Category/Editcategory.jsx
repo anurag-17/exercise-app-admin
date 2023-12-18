@@ -15,7 +15,7 @@ const Editcategory = ({ closeModal, editData, refreshdata }) => {
     const [videoview, setVideoview] = useState("")
     const [isLoading, setLoading] = useState(false);
     const token = JSON.parse(sessionStorage.getItem("sessionToken"))
-    console.log(edit);
+    // console.log(edit);
 
     const hideModal = () => {
         closeModal(false)
@@ -60,7 +60,7 @@ const Editcategory = ({ closeModal, editData, refreshdata }) => {
     }
     const handleSubmit = async (e) => {
         e.preventDefault()
-        console.log(edit);
+        // console.log(edit);
         const { _id, ...newEdit } = edit;
         const updatedDetails = newEdit
         setLoading(true)
@@ -81,7 +81,7 @@ const Editcategory = ({ closeModal, editData, refreshdata }) => {
                 closeModal()
                 refreshdata()
             } else {
-                console.log(response);
+                // console.log(response);
 
                 toast.error(response)
                 setLoading(false)
@@ -108,7 +108,7 @@ const Editcategory = ({ closeModal, editData, refreshdata }) => {
             });
 
             if (response.status === 200) {
-                console.log('Category added:', response?.data);
+                // console.log('Category added:', response?.data);
                 setEdit({ ...edit, ['file']: response?.data?.url })
                 setImageDisable(true)
             }
@@ -138,7 +138,7 @@ const Editcategory = ({ closeModal, editData, refreshdata }) => {
             });
 
             if (response.status === 200) {
-                console.log('Video uploaded:', response?.data);
+                // console.log('Video uploaded:', response?.data);
                 const videoUrl = response?.data?.url;
 
                 setEdit({ ...edit, video: [...edit.video, videoUrl] });
@@ -218,10 +218,9 @@ const Editcategory = ({ closeModal, editData, refreshdata }) => {
                             {
                                 Array.isArray(edit?.video) && edit?.video?.length > 0 ?
                                     edit.video.map((items, index) => {
-                                        console.log(items);
                                         return (
                                             <>
-                                                <div className='p-1 flex'>
+                                                <div className='p-1 flex' key={index}>
                                                     <div className="text-[14px] font-[400]  cursor-pointer text-[blue] whitespace-nowrap" onClick={() => handleVideo(items)}>{index + 1} Video</div>
                                                     <button className='text-[14px] px-4 font-[400] border rounded h-[25px] text-[red] hover:bg-[#efb3b38a] ml-4' onClick={() => removeVideo(index)}>Remove</button>
                                                 </div>
@@ -263,7 +262,7 @@ const Editcategory = ({ closeModal, editData, refreshdata }) => {
                             type="submit"
                             className="rounded-[6px] py-1 px-4 max-w-[300px] w-full lg:w-[50%] border bg-[#1f2432] text-white"
                         >
-                            Add
+                            Update
                         </button>
                     </div>
 

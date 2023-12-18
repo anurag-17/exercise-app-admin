@@ -1,36 +1,53 @@
-import logo from './logo.svg';
-import './App.css';
-import { Upload } from './Component/Upload';
-import Login from "./Component/Login";
-import SideMenu from "./Component/Main";
-import Page1 from "./Component/Page1";
-import Page2 from "./Component/Page2";
-import { Route, Routes, Navigate, BrowserRouter } from "react-router-dom";
-import Dashboard from './Component/Dashboard';
+import { Route, Routes, BrowserRouter, Navigate } from "react-router-dom";
 import { ToastContainer } from 'react-toastify';
+
+import SideMenu from "./Component/Main";
+import Login from "./Component/Login";
+import './App.css';
+
 import "react-toastify/dist/ReactToastify.css";
+
+import ForgotPassword from './Component/ForgotPassword';
+import ResetPassword from './Component/ResetPassword';
+
+
 function App() {
 
+  function PrivateRoute({ path, element }) {
+
+    const isAuthenticated = JSON.parse(sessionStorage.getItem("sessionToken")) !== null;
+  
+    return isAuthenticated ? (
+      element
+    ) : (
+      <Navigate to="/login" />
+    );
+  }
+ 
   return (
-    // <div className="App">
-    // <Upload/>
-    // </div>
+
     <div>
       
       <BrowserRouter>
         <Routes>
-          {/* <Route path="/" element={<SideMenu />} /> */}
-          <Route path="/" element={<Login />} />
-          <Route path="/admindashboard" element={<SideMenu />} />
 
-          <Route path="/one" element={<Page1 />} />
-          <Route path="/two" element={<Page2 />} />
-          {/* <Route path="/summary" element={<Summary />} /> */}
-          {/* <Route path="/summaryData/:id" element={<SummaryData />} /> */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
+
+          <Route
+            path="/admindashboard"
+            element={<PrivateRoute element={<SideMenu />} />}
+          />
+          <Route
+            path="/"
+            element={<PrivateRoute element={<SideMenu />} />}
+          />
+
         </Routes>
       </BrowserRouter>
       <ToastContainer
-          
+
       />
     
     </div>
