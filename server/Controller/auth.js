@@ -3,7 +3,8 @@ const User = require("../Model/User")
 const bcrypt = require('bcrypt');
 const { generateToken, verifyToken } = require("../Utils/jwt");
 const Category = require("../Model/Category");
-
+const AWS = require('aws-sdk');
+const fs = require('fs');
 const uploadOnS3 = require("../Utils/awsS3");
 const sendEmail = require("../Utils/SendEmail");
 const HttpStatus = {
@@ -11,12 +12,13 @@ const HttpStatus = {
   BAD_REQUEST: 400,
   UNAUTHORIZED: 401,
   SERVER_ERROR: 500,
+  INVALID : 202
 };
-
+const jwt = require("jsonwebtoken");
 const StatusMessage = {
   INVALID_CREDENTIALS: "Invalid credentials.",
   INVALID_EMAIL_PASSWORD: "Please provide email and password.",
-  USER_NOT_FOUND: "Invalid credentials or user not found.",
+  USER_NOT_FOUND: "User not found.",
   SERVER_ERROR: "Server error.",
   MISSING_DATA: "Please provide all necessary user details.",
   DUPLICATE_DATA: "Data already exists.",
@@ -90,7 +92,7 @@ exports.adminLogin = async (req, res) => {
     const admin = await Admin.findOne({ email });
 
     if (!admin) {
-      return res.status(HttpStatus.UNAUTHORIZED).json(StatusMessage.USER_NOT_FOUND);
+      return res.status(HttpStatus.INVALID).json(StatusMessage.USER_NOT_FOUND);
     }
 
     const isPasswordMatch = await bcrypt.compare(password, admin.password);
@@ -102,7 +104,7 @@ exports.adminLogin = async (req, res) => {
         token: token,
       });
     } else {
-      return res.status(HttpStatus.UNAUTHORIZED).json(StatusMessage.INVALID_CREDENTIALS);
+      return res.status(HttpStatus.INVALID).json(StatusMessage.INVALID_CREDENTIALS);
     }
   } catch (error) {
     return res.status(HttpStatus.SERVER_ERROR).json(StatusMessage.SERVER_ERROR);
@@ -316,8 +318,70 @@ exports.uploadImage = async (req, res, next) => {
     console.error(error);
     return res.status(500).json({ error: "Internal server error" });
   }
-};
 
+};
+// const s3 = new AWS.S3({
+//   accessKeyId: process.env.awsAccessKey,
+//   secretAccessKey: process.env.awsSecretkey,
+//   region: process.env.awsRegion, 
+// });
+
+// exports.uploadImage = async (req, res, next) => {
+//   try {
+//     if (!req.file) {
+//       return res.status(400).json({ error: "Invalid request" });
+//     }
+
+//     const { originalname, buffer, size } = req.file;
+
+//     const uploadParams = {
+//       Bucket: 'exerciseimage',
+//       Key: originalname,
+//       Body: buffer
+//     };
+
+//     // Initiate the multipart upload
+//     const uploadData = await s3.createMultipartUpload(uploadParams).promise();
+//     const uploadId = uploadData.UploadId;
+
+//     const partSize = 5  1024  1024; // 5MB part size (adjust as needed)
+//     const partCount = Math.ceil(size / partSize);
+//     const parts = [];
+
+//     for (let i = 0; i < partCount; i++) {
+//       const start = i * partSize;
+//       const end = Math.min(start + partSize, size);
+
+//       const partParams = {
+//         Bucket: 'exerciseimage',
+//         Key: originalname,
+//         PartNumber: i + 1,
+//         UploadId: uploadId,
+//         Body: buffer.slice(start, end)
+//       };
+
+//       const part = await s3.uploadPart(partParams).promise();
+//       parts.push({ PartNumber: i + 1, ETag: part.ETag });
+//     }
+
+//     const completeParams = {
+//       Bucket: 'exerciseimage',
+//       Key: originalname,
+//       MultipartUpload: {
+//         Parts: parts
+//       },
+//       UploadId: uploadId
+//     };
+
+//     // Complete the multipart upload
+//     const data = await s3.completeMultipartUpload(completeParams).promise();
+
+//     return res.status(200).json({ status: true, url: data.Location });
+//   } catch (error) {
+//     console.error(error);
+//     return res.status(500).json({ error: "Internal server error" });
+//   }
+// };
 
 // Handling the file upload with multer middleware
 exports.addCategory = async (req, res) => {
@@ -477,7 +541,7 @@ exports.forgotPwd = async (req, res) => {
   }
   const token = generateToken({ email: user.email });
   const mailOptions = {
-    from: "akash.hardia@gmail.com",
+    from: "mailto:akash.hardia@gmail.com",
     to: user.email,
     subject: "Reset Password Link",
     text: `<h2>Hello! ${user.name} </h2>
@@ -578,15 +642,44 @@ exports.resetPassword = async (req, res) => {
 }
 
 exports.changeUserPwd = async(req,res)=>{
-  const {id, oldPassword, newPassword} = req.body
-  if (!id || !oldPassword || !newPassword) {
+  const {oldPassword, newPassword} = req.body
+  const authHeader = req.headers.authorization;
+  let token = '';
+ let user =''
+  
+
+
+  if (!authHeader|| !oldPassword || !newPassword) {
     return res.status(HttpStatus.BAD_REQUEST).json(StatusMessage.MISSING_DATA);
   }
   try {
-    const user = await User.findById(id)
-    if (!user) {
-      return res.status(HttpStatus.UNAUTHORIZED).json(StatusMessage.USER_NOT_FOUND);
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.slice(7);
+    } else {
+        token = authHeader
     }
+    if (!token) {
+      return res
+        .status(401)
+        .json({ message: "Please login to access this resource" });
+    } else {
+      const decodedData = jwt.verify(token, process.env.jwtKey);
+    //   console.log(decodedData);
+    if (!decodedData) {
+        return res
+        .status(HttpStatus.BAD_REQUEST)
+        .json(StatusMessage.USER_NOT_FOUND);
+      }
+       user = await User.findOne({email:decodedData?.email});
+       if (!user) {
+        return res
+        .status(HttpStatus.BAD_REQUEST)
+        .json(StatusMessage.USER_NOT_FOUND);
+      }
+    }
+    // const user = await Admin.findById(id)
+  //  console.log(user._id.toString());
+   const id = user._id?.toString() 
     const isPasswordMatch = await bcrypt.compare(oldPassword, user.password);
     if (isPasswordMatch) {
       const hashedPassword = await bcrypt.hash(newPassword, 10);
@@ -598,7 +691,7 @@ exports.changeUserPwd = async(req,res)=>{
 
       }
     } else {
-      return res.status(HttpStatus.UNAUTHORIZED).json(StatusMessage.INVALID_CREDENTIALS);
+      return res.status(HttpStatus.INVALID).json(StatusMessage.INVALID_CREDENTIALS);
     }
 
     
@@ -610,15 +703,44 @@ exports.changeUserPwd = async(req,res)=>{
 }
 
 exports.changeAdminPwd = async(req,res)=>{
-  const {id, oldPassword, newPassword} = req.body
-  if (!id || !oldPassword || !newPassword) {
+  const {oldPassword, newPassword} = req.body
+  const authHeader = req.headers.authorization;
+  let token = '';
+ let user =''
+  
+
+
+  if (!authHeader|| !oldPassword || !newPassword) {
     return res.status(HttpStatus.BAD_REQUEST).json(StatusMessage.MISSING_DATA);
   }
   try {
-    const user = await Admin.findById(id)
-    if (!user) {
-      return res.status(HttpStatus.UNAUTHORIZED).json(StatusMessage.USER_NOT_FOUND);
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.slice(7);
+    } else {
+        token = authHeader
     }
+    if (!token) {
+      return res
+        .status(401)
+        .json({ message: "Please login to access this resource" });
+    } else {
+      const decodedData = jwt.verify(token, process.env.jwtKey);
+    //   console.log(decodedData);
+    if (!decodedData) {
+        return res
+        .status(HttpStatus.BAD_REQUEST)
+        .json(StatusMessage.USER_NOT_FOUND);
+      }
+       user = await Admin.findOne({email:decodedData?.email});
+       if (!user) {
+        return res
+        .status(HttpStatus.BAD_REQUEST)
+        .json(StatusMessage.USER_NOT_FOUND);
+      }
+    }
+    // const user = await Admin.findById(id)
+  //  console.log(user._id.toString());
+   const id = user._id?.toString() 
     const isPasswordMatch = await bcrypt.compare(oldPassword, user.password);
     if (isPasswordMatch) {
       const hashedPassword = await bcrypt.hash(newPassword, 10);
@@ -630,7 +752,7 @@ exports.changeAdminPwd = async(req,res)=>{
 
       }
     } else {
-      return res.status(HttpStatus.UNAUTHORIZED).json(StatusMessage.INVALID_CREDENTIALS);
+      return res.status(HttpStatus.INVALID).json(StatusMessage.INVALID_CREDENTIALS);
     }
 
     

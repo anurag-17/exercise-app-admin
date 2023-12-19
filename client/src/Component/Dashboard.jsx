@@ -1,12 +1,11 @@
 import React, { Fragment } from "react";
 import dash_img from "../assets/dashboard.svg"
-import LogoutIcon from "./Svg/Logout";
 import ProfileIcon from "./Svg/ProfileIcon";
+import SignOutIcon from "./Svg/SignOutIcon";
 
 import { Menu, Transition, Popover } from "@headlessui/react";
 import { Link } from "react-router-dom";
 import PasswordIcon from "./Svg/PasswordIcon";
-
 
 
 const Dashboard = () => {
@@ -54,7 +53,7 @@ const Dashboard = () => {
                         className="flex gap-x-3 hover:bg-lightBlue-600 hover:underline text-gray-700 rounded  text-sm group transition-colors items-center"
 
                       >
-                        <LogoutIcon style={{ height: "20px", width: "20px" }} />
+                        <SignOutIcon  />
                         Sign out
                       </Link>
                     </Menu.Item>

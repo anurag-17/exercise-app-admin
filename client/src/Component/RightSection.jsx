@@ -1,5 +1,5 @@
 import React from "react";
-import bgImg from "../assets/gym.jpg"
+import bgImg from "../assets/gym.webp"
 
 
 const RightSection = () => {

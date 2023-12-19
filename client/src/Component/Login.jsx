@@ -32,14 +32,14 @@ const Login = () => {
                     'Content-Type': 'application/json',
                 },
             });
-
+console.log(response)
             if (response.status === 200) {
                 toast.success("Login successful!")
                 setLoading(false)
                 sessionStorage.setItem("sessionToken", JSON.stringify(response.data.token))
                 navigate("/admindashboard")
             } else {
-                toast.error("Invalid credentials!")
+                toast.error(response?.data  )
                 sessionStorage.removeItem("sessionToken")
                 setLoading(false)
             }
