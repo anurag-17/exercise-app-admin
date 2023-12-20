@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import axios from "axios";
 
 
-const DeleteUser = ({ deleteId, closeModal, refreshdata }) => {
+const DeleteFeedback = ({ deleteId, closeModal, refreshdata }) => {
 
   const [isLoading, setLoading] = useState(false);
   const token = JSON.parse(sessionStorage.getItem("sessionToken"))
@@ -18,7 +18,7 @@ const DeleteUser = ({ deleteId, closeModal, refreshdata }) => {
 
     const options = {
       method: "DELETE",
-      url: `/api/auth/deletefeedback/${deleteId}`,
+      url: `/api/auth/deletefeedback/${`1213`}`,
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
@@ -51,7 +51,7 @@ const DeleteUser = ({ deleteId, closeModal, refreshdata }) => {
     <>
       <div className="mt-2">
         <p className=" text-[16px] font-normal leading-[30px] text-gray-500 mt-4">
-          Are you sure you want to delete this user ?
+          Are you sure you want to delete this feedback ?
         </p>
       </div>
 
@@ -77,4 +77,4 @@ const DeleteUser = ({ deleteId, closeModal, refreshdata }) => {
   );
 };
 
-export default DeleteUser;
+export default DeleteFeedback;

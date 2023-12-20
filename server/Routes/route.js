@@ -1,5 +1,5 @@
 const express = require("express")
-const { addAdmin, adminLogin, addUser, userLogin, deleteUser, updateUser, viewUser, addCategory, deleteCategory, updateCategory, viewCategory, uploadImage, verifyUser, getCategoryById, forgotPwd, resetPassword, changeUserPwd, changeAdminPwd } = require("../Controller/auth")
+const { addAdmin, adminLogin, addUser, userLogin, deleteUser, updateUser, viewUser, addCategory, deleteCategory, updateCategory, viewCategory, uploadImage, verifyUser, getCategoryById, forgotPwd, resetPassword, changeUserPwd, changeAdminPwd, addWatchTime, addfeedBack, viewAllFeedback, deleteFeedbackById, getWatchByUser } = require("../Controller/auth")
 const router = express.Router()
 const multer = require('multer');
 const { authorizeRoles, isAuthJWT } = require("../Utils/jwt");
@@ -25,6 +25,9 @@ router.route("/forgotpassword").post(forgotPwd)
 router.route("/resetpassword").post(resetPassword)
 router.route("/changepasswordUser").post(isAuthJWT,authorizeRoles("User"),changeUserPwd)
 router.route("/changepasswordAdmin").post(isAuthJWT,authorizeRoles("Admin"),changeAdminPwd)
-
-
+router.route("/addwatchTime").post(isAuthJWT, addWatchTime)
+router.route("/addfeedback").post(isAuthJWT, addfeedBack)
+router.route("/allfeedback").get(isAuthJWT,viewAllFeedback)
+router.route("/deletefeedback/:id").delete(isAuthJWT, deleteFeedbackById)
+router.route("/getWatchTime/:userID").get(isAuthJWT,getWatchByUser)
 module.exports = router;

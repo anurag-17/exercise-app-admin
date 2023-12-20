@@ -1,25 +1,29 @@
 import React, { Fragment, useState, useEffect } from "react"
-import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import { Dialog, Transition } from "@headlessui/react";
+import axios from "axios";
+
 import Pagination from "../Pagination/Index";
 import DeleteUser from "./DeleteUser";
 import Loader from "../WebsiiteLoader/Index";
+import Backarrow from "../Svg/Backarrow";
+import CloseIcon from "../Svg/CloseIcon";
 
 export const headItems = ["S. No.", "Name", " Contact No", "Email", "Action"]
 
 
 const User = () => {
+
+  const navigate = useNavigate();
   let [allData, setAllData] = useState([])
-  let [isOpen, setIsOpen] = useState(false)
-  let [openEdit, setOpenEdit] = useState(false)
   let [openDelete, setOpenDelete] = useState(false)
   let [isLoader, setLoader] = useState(false)
   let [updateId, setUpdateId] = useState("")
   const [isRefresh, setRefresh] = useState(false);
-  const [editData, setEditData] = useState([]);
-  const visiblePageCount = 15
+  const [searchText, setSearchText] = useState("");
+  const visiblePageCount = 10
   const token = JSON.parse(sessionStorage.getItem("sessionToken"))
-  // all data
+
   useEffect(() => {
     getAllData(1);
   }, [isRefresh]);
@@ -37,7 +41,6 @@ const User = () => {
     axios
       .request(options)
       .then((response) => {
-        console.log(response?.data);
         if (response.status === 200) {
           setLoader(false)
           setAllData(response?.data);
@@ -53,13 +56,6 @@ const User = () => {
       });
   };
 
-
-  const closeModal = () => {
-    setIsOpen(false)
-  }
-
-
-
   const handleDelete = (id) => {
     setUpdateId(id)
     setOpenDelete(true)
@@ -74,16 +70,92 @@ const User = () => {
   }
 
 
+  const handleSearchInput = (e) => {
+    setSearchText(e.target.value);
+    searchDataFunc(e.target.value);
+  };
+
+  const handleSearch = () => {
+    if (searchText) {
+      searchDataFunc(searchText.trim());
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    console.log("Pressed key:", e.key);
+    if (e.key === "Backspace") {
+      // e.preventDefault(); // Prevent the default action
+      searchDataFunc(searchText);
+    }
+  };
+
+  const handleClearSearch = () => {
+    refreshdata();
+    setSearchText("");
+  };
+
+  const searchDataFunc = (search_cate) => {
+    const options = {
+      method: "GET",
+      url: `/api/auth/viewUser?search=${search_cate}`,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "multipart/form-data",
+      },
+    };
+    axios
+      .request(options)
+      .then((response) => {
+        console.log(response?.data);
+        if (response.status === 200) {
+          setAllData(response?.data);
+        } else {
+          return;
+        }
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
+  };
+
 
   return (
     <>
       {
         isLoader && <Loader />
       }
-      <section className="py-[40px] px-[20px] mt-[20px] lg:mt-0">
+      <section className="py-[30px] px-[20px] mt-[20px] lg:mt-0">
         <div className=" mx-auto">
           <div className="rounded-[10px] bg-white py-[15px] flex justify-between items-center px-[20px]">
             <p className=" text-[22px] font-semibold">User list</p>
+            <div className="flex gap-x-7 lg:gap-x-5 md:flex-auto flex-wrap gap-y-3  items-center justify-center md:justify-end">
+              <div className="border border-[gray] rounded-[5px] bg-[#302f2f82]] flex justify-center items-center h-[32px] pl-[10px] md:w-auto w-full">
+                <input
+                  type="text"
+                  className="focus-visible:outline-none border-none w-full rounded-[5px] font-normal text-[15px] text-[#6a6969] placeholder:text-[11px]"
+                  value={searchText}
+                  onChange={handleSearchInput}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Search by name, contact, email."
+                />
+                {searchText !== "" ? (
+                  <button
+                    className="px-1 rounded text-[12px] text-[gray] border border-[#6a696917] hover:text-black mr-1"
+                    onClick={handleClearSearch}
+                  >
+                   <CloseIcon />
+                  </button>
+                ) : (
+                  ""
+                )}
+                <button
+                  className="px-6 rounded text-[12px] text-[gray] h-[32px] bg-[#6a696917] hover:text-black"
+                  onClick={handleSearch}
+                >
+                  Search
+                </button>
+              </div>
+            </div>
           </div>
           <div className="rounded-[10px] bg-white py-[30px] px-[20px] flex justify-between items-center mt-[20px] p-6 overflow-x-scroll">
             <table className="w-full min-w-[640px] table-auto mt-[20px] ">
@@ -120,17 +192,19 @@ const User = () => {
             </table>
 
 
-            {
+          </div>
+
+
+          {
             Array.isArray(allData?.users) && allData?.users?.length === 0  &&
 
             <div className="py-4 px-4 w-full flex flex-col items-center justify-center border border-[#f3f3f3] bg-white rounded-[20px] mt-[10px]">
               <p className="text-[18px] fontsemibold">No data</p>
             </div>
           }
-          </div>
         </div>
 
-        {allData?.totalPages > 1 && (
+        {allData?.pagination?.totalPages > 1 && (
           <Pagination
             currentpage={allData?.pagination?.currentPage}
             totalCount={allData?.pagination?.totalPages}

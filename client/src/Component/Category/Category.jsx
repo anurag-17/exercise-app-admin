@@ -1,6 +1,8 @@
 import React, { Fragment, useState, useEffect } from "react";
-import axios from "axios";
 import { Dialog, Transition } from "@headlessui/react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+
 import AddCategory from "./AddCategory";
 import DeleteCategory from "./DeleteCategory";
 import Editcategory from "./Editcategory.jsx";
@@ -9,6 +11,7 @@ import AllVideosPopup from "./AllVideos";
 import CloseIcon from "../Svg/CloseIcon";
 import ImagePopup from "./ImagePopup";
 import Loader from "../WebsiiteLoader/Index";
+import Backarrow from "../Svg/Backarrow";
 
 export const headItems = [
   "S. No.",
@@ -19,6 +22,8 @@ export const headItems = [
 ];
 
 const Category = () => {
+
+  const navigate = useNavigate();
   let [allData, setAllData] = useState([]);
   const token = JSON.parse(sessionStorage.getItem("sessionToken"));
 
@@ -197,25 +202,25 @@ const Category = () => {
     <>
       {isLoader && <Loader />}
       <section>
-        <div className="py-[40px] px-[20px] mx-auto mt-[20px] lg:mt-0">
+        <div className="py-[30px] px-[20px] mx-auto mt-[20px] lg:mt-0">
           <div className="rounded-[10px] bg-white py-[15px] flex justify-center md:justify-between gap-x-20 items-center flex-wrap md:flex-auto gap-y-5 px-[20px]">
             <p className=" text-[24px] font-semibold text-left ">Category</p>
             <div className="flex gap-x-7 lg:gap-x-5 md:flex-auto flex-wrap gap-y-3  items-center justify-center md:justify-end">
               <div className="border border-[gray] rounded-[5px] bg-[#302f2f82]] flex justify-center items-center h-[32px] pl-[10px] md:w-auto w-full">
                 <input
                   type="text "
-                  className=" focus-visible:outline-none border-none w-full rounded-[5px] font-normal  text-[15px]"
+                  className=" focus-visible:outline-none border-none w-full rounded-[5px] font-normal text-[15px] text-[#6a6969] placeholder:text-[11px]"
                   value={searchText}
                   onChange={handleSearchInput}
                   onKeyDown={handleKeyDown}
+                  placeholder="Search by category"
                 />
                 {searchText !== "" ? (
                   <button
                     className="px-1 rounded text-[12px] text-[gray] border border-[#6a696917] hover:text-black mr-1"
                     onClick={handleClearSearch}
                   >
-                    {" "}
-                    X{" "}
+                  <CloseIcon/>
                   </button>
                 ) : (
                   ""
@@ -224,7 +229,7 @@ const Category = () => {
                   className="px-6 rounded text-[12px] text-[gray] h-[32px] bg-[#6a696917] hover:text-black"
                   onClick={handleSearch}
                 >
-                  Search{" "}
+                  Search
                 </button>
               </div>
               <button
@@ -233,6 +238,13 @@ const Category = () => {
               >
                 Add new
               </button>
+              {/* <div
+                className="bg-[#e5f0fa] hover:bg-[#c5dcf0] px-3 py-1 rounded cursor-pointer flex items-center gap-3"
+                onClick={() => navigate(-1)}
+              >
+                <Backarrow/>
+                Go back
+              </div> */}
             </div>
           </div>
           {Array.isArray(allData?.category) &&
@@ -255,7 +267,7 @@ const Category = () => {
                   <tbody>
                     {allData?.category?.map((items, index) => (
                       <tr key={index}>
-                        {/* {console.log(allData?.pagination?.currentPage)} */}
+                
                         <td className="text-[14px] font-[400] py-3 px-5">
                           {index +
                             1 +
@@ -296,7 +308,7 @@ const Category = () => {
                         <td className="text-[14px] font-[400] py-3 px-5">
                           <div className="flex flex-col md:flex-row items-center gap-x-3 gap-y-3">
                             <button
-                              className="px-4 text-[13px] border rounded h-[25px] text-[gray] hover:bg-[#80808045] hover:text-[black] md:w-auto w-full"
+                              className="px-4 text-[13px] border rounded h-[25px] text-[gray] hover:bg-[#aba9a945] hover:text-[gray] md:w-auto w-full"
                               onClick={() => handleEdit(items?._id)}
                             >
                               Edit

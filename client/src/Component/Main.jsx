@@ -1,18 +1,21 @@
+import { useEffect } from "react";
 import React, { Fragment, useState } from "react";
 import {useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import axios from "axios";
 
 import Dashboard from "./Dashboard";
-import { useEffect } from "react";
-import axios from "axios";
-import { toast } from "react-toastify";
 import User from "./User/Index";
 import Category from "./Category/Category";
+import Feedback from "./Feedback/Index";
+
 import DashboardIcon from "./Svg/DashboardIcon";
-import UserIcon from "./Svg/UserIcon";
 import CategoryIcon from "./Svg/CategoryIcon";
-import LogoutIcon from "./Svg/Logout";
 import CloseIcon from "./Svg/CloseIcon";
-import ChangePassword from "./ChangePassword/Index";
+import UserIcon from "./Svg/UserIcon";
+import LogoutIcon from "./Svg/Logout";
+import Feedbackicon from "./Svg/Feedbackicon";
+
 
 export const menus = [
     {
@@ -33,16 +36,16 @@ export const menus = [
         component: <Category />,
         icon: <CategoryIcon />,
     },
-    // {
-    //     id: 3,
-    //     label: "Feedback",
-    //     component: <Category />,
-    //     icon: <CategoryIcon />,
-    // },
+    {
+        id: 3,
+        label: "Feedback",
+        component: <Feedback />,
+        icon: <Feedbackicon />,
+    },
 ]
 
 const SideMenu = () => {
-    const [ComponentId, setComponentId] = useState(2);
+    const [ComponentId, setComponentId] = useState(0);
     const [token, setToken] = useState(JSON.parse(sessionStorage.getItem("sessionToken")))
     const [showDrawer, setShowDrawer] = useState(false)
     // console.log(token);

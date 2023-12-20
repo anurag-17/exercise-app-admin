@@ -7,14 +7,17 @@ const AWS = require('aws-sdk');
 const fs = require('fs');
 const uploadOnS3 = require("../Utils/awsS3");
 const sendEmail = require("../Utils/SendEmail");
+const mongoose = require("mongoose")
 const HttpStatus = {
   OK: 200,
+  INVALID: 201,
   BAD_REQUEST: 400,
   UNAUTHORIZED: 401,
   SERVER_ERROR: 500,
-  INVALID : 202
 };
 const jwt = require("jsonwebtoken");
+const WatchTime = require("../Model/WatchTime");
+const Feedback = require("../Model/Feedback");
 const StatusMessage = {
   INVALID_CREDENTIALS: "Invalid credentials.",
   INVALID_EMAIL_PASSWORD: "Please provide email and password.",
@@ -24,11 +27,12 @@ const StatusMessage = {
   DUPLICATE_DATA: "Data already exists.",
   DUPLICATE_EMAIL: "Email already exists.",
   DUPLICATE_CONTACT: "Contact number already exists.",
-  USER_DELETED: "User deleted successfully.",
+  USER_DELETED: "Deleted successfully.",
   UNAUTHORIZED_ACCESS: "Unauthorized access.",
   USER_UPDATED: "User updated successfully.",
   MISSING_PAGE_PARAMS: "Please provide page number and limit.",
-
+  SAVED_SUCC: "Saved Successfully!",
+  NOT_FOUND: "Data not found."
 };
 var ObjectId = require('mongodb').ObjectId
 
@@ -92,7 +96,7 @@ exports.adminLogin = async (req, res) => {
     const admin = await Admin.findOne({ email });
 
     if (!admin) {
-      return res.status(HttpStatus.INVALID).json(StatusMessage.USER_NOT_FOUND);
+      return res.status(HttpStatus.UNAUTHORIZED).json(StatusMessage.USER_NOT_FOUND);
     }
 
     const isPasswordMatch = await bcrypt.compare(password, admin.password);
@@ -104,7 +108,7 @@ exports.adminLogin = async (req, res) => {
         token: token,
       });
     } else {
-      return res.status(HttpStatus.INVALID).json(StatusMessage.INVALID_CREDENTIALS);
+      return res.status(HttpStatus.UNAUTHORIZED).json(StatusMessage.INVALID_CREDENTIALS);
     }
   } catch (error) {
     return res.status(HttpStatus.SERVER_ERROR).json(StatusMessage.SERVER_ERROR);
@@ -167,6 +171,7 @@ exports.userLogin = async (req, res) => {
       return res.status(HttpStatus.OK).json({
         message: `Welcome ${user.email}`,
         token: token,
+        userID: user._id
       });
     } else {
       return res.status(HttpStatus.UNAUTHORIZED).json(StatusMessage.INVALID_CREDENTIALS);
@@ -344,7 +349,7 @@ exports.uploadImage = async (req, res, next) => {
 //     const uploadData = await s3.createMultipartUpload(uploadParams).promise();
 //     const uploadId = uploadData.UploadId;
 
-//     const partSize = 5  1024  1024; // 5MB part size (adjust as needed)
+//     const partSize = 5 * 1024 * 1024; // 5MB part size (adjust as needed)
 //     const partCount = Math.ceil(size / partSize);
 //     const parts = [];
 
@@ -412,6 +417,8 @@ exports.addCategory = async (req, res) => {
     if (result) {
 
       return res.status(HttpStatus.OK).json("Category added successfully.");
+    } else {
+      return res.status(HttpStatus.INVALID).json(StatusMessage.SERVER_ERROR);
     }
 
     // ... rest of your code remains the same
@@ -444,7 +451,7 @@ exports.deleteCategory = async (req, res) => {
 
     const deleteCat = await Category.findByIdAndDelete(deleteID)
     if (!deleteCat) {
-      return res.status(HttpStatus.BAD_REQUEST).json("Category not found.");
+      return res.status(HttpStatus.INVALID).json(StatusMessage.NOT_FOUND);
     }
     return res.status(HttpStatus.OK).json("Category deleted successfully.");
   } catch (error) {
@@ -465,7 +472,7 @@ exports.updateCategory = async (req, res) => {
     const updatedCategory = await Category.findByIdAndUpdate(id, updatedDetails, { new: true });
 
     if (!updatedCategory) {
-      return res.status(HttpStatus.BAD_REQUEST).json("Category not found.");
+      return res.status(HttpStatus.INVALID).json(StatusMessage.NOT_FOUND);
     }
 
     return res.status(HttpStatus.OK).json(StatusMessage.USER_UPDATED);
@@ -481,7 +488,7 @@ exports.getCategoryById = async (req, res) => {
 
     const categoryData = await Category.findById(_id);
     if (!categoryData) {
-      return res.status(HttpStatus.BAD_REQUEST).json("Category not found.");
+      return res.status(HttpStatus.INVALID).json(StatusMessage.NOT_FOUND);
     }
 
     return res.status(HttpStatus.OK).json(categoryData);
@@ -541,7 +548,7 @@ exports.forgotPwd = async (req, res) => {
   }
   const token = generateToken({ email: user.email });
   const mailOptions = {
-    from: "mailto:akash.hardia@gmail.com",
+    from: "akash.hardia@gmail.com",
     to: user.email,
     subject: "Reset Password Link",
     text: `<h2>Hello! ${user.name} </h2>
@@ -566,10 +573,10 @@ exports.resetPassword = async (req, res) => {
   let hashedPassword
   if (!password) {
     return res.status(HttpStatus.BAD_REQUEST).json(StatusMessage.MISSING_DATA);
-   
+
   }
-  else{
-     hashedPassword = await bcrypt.hash(password, 10)
+  else {
+    hashedPassword = await bcrypt.hash(password, 10)
   }
   const authHeader = req.headers.authorization;
   let token = '';
@@ -589,8 +596,8 @@ exports.resetPassword = async (req, res) => {
     //   console.log(decodedData);
     if (!decodedData) {
       return res
-      .status(HttpStatus.BAD_REQUEST)
-      .json(StatusMessage.USER_NOT_FOUND);
+        .status(HttpStatus.BAD_REQUEST)
+        .json(StatusMessage.USER_NOT_FOUND);
     }
     user = await User.findOne({ email: decodedData?.email });
     if (user === null) {
@@ -599,64 +606,64 @@ exports.resetPassword = async (req, res) => {
     const role = user.role
     const id = user._id?.toString(); // Accessing _id using dot notation
     // console.log(userId);
-   console.log(role);
-   if (!role) {
-    return res
-    .status(HttpStatus.BAD_REQUEST)
-    .json(StatusMessage.USER_NOT_FOUND);
-   }
-   if (role === "Admin") {
-    try {
-      const updatedUser = await Admin.findByIdAndUpdate(
-        id, // pass the ID directly
-        { password: hashedPassword }, // update only the password field
-        { new: true }
-      );
-    if (!updatedUser) {
-      return res.status(HttpStatus.BAD_REQUEST).json("User not found.");
+    console.log(role);
+    if (!role) {
+      return res
+        .status(HttpStatus.BAD_REQUEST)
+        .json(StatusMessage.USER_NOT_FOUND);
     }
+    if (role === "Admin") {
+      try {
+        const updatedUser = await Admin.findByIdAndUpdate(
+          id, // pass the ID directly
+          { password: hashedPassword }, // update only the password field
+          { new: true }
+        );
+        if (!updatedUser) {
+          return res.status(HttpStatus.BAD_REQUEST).json("User not found.");
+        }
 
-    return res.status(HttpStatus.OK).json(StatusMessage.USER_UPDATED);
-    } catch (error) {
-      return res.status(HttpStatus.BAD_REQUEST).json("Error updating password.")
+        return res.status(HttpStatus.OK).json(StatusMessage.USER_UPDATED);
+      } catch (error) {
+        return res.status(HttpStatus.BAD_REQUEST).json("Error updating password.")
+      }
     }
-   }
-   if (role === "User") {
-    try {
-      const updatedUser = await User.findByIdAndUpdate(
-        id, // pass the ID directly
-        { password: hashedPassword }, // update only the password field
-        { new: true }
-      );
-    if (!updatedUser) {
-      return res.status(HttpStatus.BAD_REQUEST).json("User not found.");
-    }
+    if (role === "User") {
+      try {
+        const updatedUser = await User.findByIdAndUpdate(
+          id, // pass the ID directly
+          { password: hashedPassword }, // update only the password field
+          { new: true }
+        );
+        if (!updatedUser) {
+          return res.status(HttpStatus.BAD_REQUEST).json("User not found.");
+        }
 
-    return res.status(HttpStatus.OK).json(StatusMessage.USER_UPDATED);
-    } catch (error) {
-      return res.status(HttpStatus.BAD_REQUEST).json("Error updating password.")
+        return res.status(HttpStatus.OK).json(StatusMessage.USER_UPDATED);
+      } catch (error) {
+        return res.status(HttpStatus.BAD_REQUEST).json("Error updating password.")
+      }
     }
-   }
     // console.log("user", user._id);
   }
 }
 
-exports.changeUserPwd = async(req,res)=>{
-  const {oldPassword, newPassword} = req.body
+exports.changeUserPwd = async (req, res) => {
+  const { oldPassword, newPassword } = req.body
   const authHeader = req.headers.authorization;
   let token = '';
- let user =''
-  
+  let user = ''
 
 
-  if (!authHeader|| !oldPassword || !newPassword) {
+
+  if (!authHeader || !oldPassword || !newPassword) {
     return res.status(HttpStatus.BAD_REQUEST).json(StatusMessage.MISSING_DATA);
   }
   try {
     if (authHeader && authHeader.startsWith('Bearer ')) {
       token = authHeader.slice(7);
     } else {
-        token = authHeader
+      token = authHeader
     }
     if (!token) {
       return res
@@ -664,26 +671,26 @@ exports.changeUserPwd = async(req,res)=>{
         .json({ message: "Please login to access this resource" });
     } else {
       const decodedData = jwt.verify(token, process.env.jwtKey);
-    //   console.log(decodedData);
-    if (!decodedData) {
+      //   console.log(decodedData);
+      if (!decodedData) {
         return res
-        .status(HttpStatus.BAD_REQUEST)
-        .json(StatusMessage.USER_NOT_FOUND);
+          .status(HttpStatus.BAD_REQUEST)
+          .json(StatusMessage.USER_NOT_FOUND);
       }
-       user = await User.findOne({email:decodedData?.email});
-       if (!user) {
+      user = await User.findOne({ email: decodedData?.email });
+      if (!user) {
         return res
-        .status(HttpStatus.BAD_REQUEST)
-        .json(StatusMessage.USER_NOT_FOUND);
+          .status(HttpStatus.BAD_REQUEST)
+          .json(StatusMessage.USER_NOT_FOUND);
       }
     }
     // const user = await Admin.findById(id)
-  //  console.log(user._id.toString());
-   const id = user._id?.toString() 
+    //  console.log(user._id.toString());
+    const id = user._id?.toString()
     const isPasswordMatch = await bcrypt.compare(oldPassword, user.password);
     if (isPasswordMatch) {
       const hashedPassword = await bcrypt.hash(newPassword, 10);
-      const changedPwd = await User.findByIdAndUpdate(id, {password:hashedPassword}) 
+      const changedPwd = await User.findByIdAndUpdate(id, { password: hashedPassword })
       if (!changedPwd) {
         return res.status(HttpStatus.BAD_REQUEST).json("User not found.");
       } else {
@@ -691,10 +698,10 @@ exports.changeUserPwd = async(req,res)=>{
 
       }
     } else {
-      return res.status(HttpStatus.INVALID).json(StatusMessage.INVALID_CREDENTIALS);
+      return res.status(HttpStatus.UNAUTHORIZED).json(StatusMessage.INVALID_CREDENTIALS);
     }
 
-    
+
   } catch (error) {
     console.log(error);
     return res.status(HttpStatus.SERVER_ERROR).json(StatusMessage.SERVER_ERROR);
@@ -702,22 +709,22 @@ exports.changeUserPwd = async(req,res)=>{
   }
 }
 
-exports.changeAdminPwd = async(req,res)=>{
-  const {oldPassword, newPassword} = req.body
+exports.changeAdminPwd = async (req, res) => {
+  const { oldPassword, newPassword } = req.body
   const authHeader = req.headers.authorization;
   let token = '';
- let user =''
-  
+  let user = ''
 
 
-  if (!authHeader|| !oldPassword || !newPassword) {
+
+  if (!authHeader || !oldPassword || !newPassword) {
     return res.status(HttpStatus.BAD_REQUEST).json(StatusMessage.MISSING_DATA);
   }
   try {
     if (authHeader && authHeader.startsWith('Bearer ')) {
       token = authHeader.slice(7);
     } else {
-        token = authHeader
+      token = authHeader
     }
     if (!token) {
       return res
@@ -725,26 +732,26 @@ exports.changeAdminPwd = async(req,res)=>{
         .json({ message: "Please login to access this resource" });
     } else {
       const decodedData = jwt.verify(token, process.env.jwtKey);
-    //   console.log(decodedData);
-    if (!decodedData) {
+      //   console.log(decodedData);
+      if (!decodedData) {
         return res
-        .status(HttpStatus.BAD_REQUEST)
-        .json(StatusMessage.USER_NOT_FOUND);
+          .status(HttpStatus.BAD_REQUEST)
+          .json(StatusMessage.USER_NOT_FOUND);
       }
-       user = await Admin.findOne({email:decodedData?.email});
-       if (!user) {
+      user = await Admin.findOne({ email: decodedData?.email });
+      if (!user) {
         return res
-        .status(HttpStatus.BAD_REQUEST)
-        .json(StatusMessage.USER_NOT_FOUND);
+          .status(HttpStatus.BAD_REQUEST)
+          .json(StatusMessage.USER_NOT_FOUND);
       }
     }
     // const user = await Admin.findById(id)
-  //  console.log(user._id.toString());
-   const id = user._id?.toString() 
+    //  console.log(user._id.toString());
+    const id = user._id?.toString()
     const isPasswordMatch = await bcrypt.compare(oldPassword, user.password);
     if (isPasswordMatch) {
       const hashedPassword = await bcrypt.hash(newPassword, 10);
-      const changedPwd = await Admin.findByIdAndUpdate(id, {password:hashedPassword}) 
+      const changedPwd = await Admin.findByIdAndUpdate(id, { password: hashedPassword })
       if (!changedPwd) {
         return res.status(HttpStatus.BAD_REQUEST).json("User not found.");
       } else {
@@ -752,10 +759,10 @@ exports.changeAdminPwd = async(req,res)=>{
 
       }
     } else {
-      return res.status(HttpStatus.INVALID).json(StatusMessage.INVALID_CREDENTIALS);
+      return res.status(HttpStatus.UNAUTHORIZED).json(StatusMessage.INVALID_CREDENTIALS);
     }
 
-    
+
   } catch (error) {
     console.log(error);
     return res.status(HttpStatus.SERVER_ERROR).json(StatusMessage.SERVER_ERROR);
@@ -763,7 +770,161 @@ exports.changeAdminPwd = async(req,res)=>{
   }
 }
 
+//////////////////////////////////watchTime//////////////
+
+
+exports.addWatchTime = async (req, res) => {
+  try {
+    const { URL, date, userID } = req.body;
+
+    // Check for missing data
+    if (!URL || !date || !userID) {
+      return res.status(HttpStatus.BAD_REQUEST).json(StatusMessage.MISSING_DATA);
+    }
+
+    // Check if there is previous data for the same userID and URL
+    const isPrevious = await WatchTime.find({ userID, URL });
+
+    if (isPrevious && Array.isArray(isPrevious) && isPrevious.length > 0) {
+      return res.status(HttpStatus.OK).json(StatusMessage.DUPLICATE_DATA);
+    }
+
+    // Save the new WatchTime entry
+    const timeData = new WatchTime({ URL, date, userID });
+    const result = await timeData.save();
+
+    if (result) {
+      return res.status(HttpStatus.OK).json(StatusMessage.SAVED_SUCC);
+    } else {
+      return res.status(HttpStatus.INVALID).json(StatusMessage.SERVER_ERROR);
+    }
+  } catch (error) {
+    console.error("addwatch", error);
+    return res.status(HttpStatus.SERVER_ERROR).json(StatusMessage.SERVER_ERROR);
+  }
+};
+exports.getWatchByUser = async (req, res) => {
+  try {
+    const { userID } = req.params
+    if (!userID) {
+      return res.status(HttpStatus.BAD_REQUEST).json(StatusMessage.MISSING_DATA);
+    }
+    const watchData = await WatchTime.find({ userID })
+    // console.log(watchData);
+    if (watchData && Array.isArray(watchData) && watchData.length > 0) {
+      return res.status(HttpStatus.OK).json({
+        watchData
+      })
+    }
+    return res.status(HttpStatus.INVALID).json(StatusMessage.NOT_FOUND)
+
+  } catch (error) {
+    console.error("getWatch", error);
+    return res.status(HttpStatus.SERVER_ERROR).json(StatusMessage.SERVER_ERROR);
+  }
+}
 
 
 
 
+/////////////////////feedback//////////////////////
+
+exports.addfeedBack = async (req, res) => {
+  try {
+    const { name, email, contact, message, userID } = req.body
+    if (!name || !email || !contact || !message || !userID) {
+      return res.status(HttpStatus.BAD_REQUEST).json(StatusMessage.MISSING_DATA);
+    }
+    const feedbackData = new Feedback({ name, email, contact, message, userID })
+    const result = await feedbackData.save()
+    if (result) {
+      try {
+        const mailOptions = {
+          from: "akash.hardia@gmail.com",
+          to: "akash.hardia@gmail.com",
+          subject: "NOTIFICATION - New Feedback!",
+          text: `
+            <html>
+              <body>
+                <h3>Hello,</h3>
+                <p>New feedback received, details as follows:</p>
+                <ul>
+                  <li><strong>Name:</strong> ${name}</li>
+                  <li><strong>Email:</strong> ${email}</li>
+                  <li><strong>Contact:</strong> ${contact}</li>
+                  <li><strong>Message:</strong> ${message}</li>
+                </ul>
+                <p>Thanks and regards</p>
+              </body>
+            </html>
+          `,
+        };
+        const info = await sendEmail(mailOptions);
+        // console.log("Email sent:", info);
+        return res.status(HttpStatus.OK).json(StatusMessage.SAVED_SUCC);
+      } catch (error) {
+        console.log("Error sending email:", error);
+        return res.status(201).json({ error: "Failed to send email" });
+      }
+      // return res.status(HttpStatus.OK).json(StatusMessage.SAVED_SUCC);
+    } else {
+      return res.status(HttpStatus.INVALID).json(StatusMessage.SERVER_ERROR);
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(HttpStatus.SERVER_ERROR).json(StatusMessage.SERVER_ERROR)
+  }
+}
+
+exports.viewAllFeedback = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1; // Get the requested page, default to 1
+    const limit = parseInt(req.query.limit) || 10; // Get the requested limit, default to 10
+
+    // Calculate the skip value for pagination
+    const skip = (page - 1) * limit;
+
+    const feedbackCount = await Feedback.countDocuments(); // Get total count of feedback
+
+    const totalPages = Math.ceil(feedbackCount / limit); // Calculate total pages
+
+    const feedback = await Feedback.find()
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 }); // Sort by createdAt in descending order or another appropriate field
+
+    return res.status(HttpStatus.OK).json({
+      feedback: feedback,
+      pagination: {
+
+        totalPages: totalPages,
+        currentPage: page,
+        totalFeedback: feedbackCount,
+      }
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(HttpStatus.SERVER_ERROR).json(StatusMessage.SERVER_ERROR);
+  }
+};
+exports.deleteFeedbackById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Check if the ID is valid or not
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(HttpStatus.BAD_REQUEST).json(StatusMessage.NOT_FOUND);
+    }
+
+    const deletedFeedback = await Feedback.findByIdAndDelete(id);
+
+    if (!deletedFeedback) {
+      return res.status(HttpStatus.INVALID).json(StatusMessage.NOT_FOUND);
+    }
+
+    return res.status(HttpStatus.OK).json(StatusMessage.USER_DELETED);
+  } catch (error) {
+    console.error(error);
+    return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(StatusMessage.SERVER_ERROR);
+  }
+};

@@ -103,6 +103,11 @@ html {
   height: 20px;
   width: 20px;
 }
+
+.head-menu svg {
+  height: 30px;
+  width: 30px;
+}
 .side-profile svg {
   height: 25px;
   width: 25px;

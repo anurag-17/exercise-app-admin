@@ -1,11 +1,12 @@
 import React, { Fragment } from "react";
-import dash_img from "../assets/dashboard.svg"
+import { Menu, Transition } from "@headlessui/react";
+import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
+
+import dash_img from "../assets/dashboard.svg";
+import PasswordIcon from "./Svg/PasswordIcon";
 import ProfileIcon from "./Svg/ProfileIcon";
 import SignOutIcon from "./Svg/SignOutIcon";
-
-import { Menu, Transition, Popover } from "@headlessui/react";
-import { Link } from "react-router-dom";
-import PasswordIcon from "./Svg/PasswordIcon";
 
 
 const Dashboard = () => {
