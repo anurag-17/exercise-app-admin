@@ -1,5 +1,5 @@
 const express = require("express")
-const { addAdmin, adminLogin, addUser, userLogin, deleteUser, updateUser, viewUser, addCategory, deleteCategory, updateCategory, viewCategory, uploadImage, verifyUser, getCategoryById, forgotPwd, resetPassword, changeUserPwd, changeAdminPwd, addWatchTime, addfeedBack, viewAllFeedback, deleteFeedbackById, getWatchByUser } = require("../Controller/auth")
+const { addAdmin, adminLogin, addUser, userLogin, deleteUser, updateUser, viewUser, addCategory, deleteCategory, updateCategory, viewCategory, uploadImage, verifyUser, getCategoryById, forgotPwd, resetPassword, changeUserPwd, changeAdminPwd, addWatchTime, addfeedBack, viewAllFeedback, deleteFeedbackById, getWatchByUser, getUserByID, logoutUser } = require("../Controller/auth")
 const router = express.Router()
 const multer = require('multer');
 const { authorizeRoles, isAuthJWT } = require("../Utils/jwt");
@@ -13,6 +13,8 @@ router.route("/adduser").post(addUser)
 router.route("/userlogin").post(userLogin)
 router.route("/deleteUser/:id").delete(isAuthJWT,authorizeRoles("Admin"),deleteUser)
 router.route("/updateUser").put(updateUser)
+router.route("/logoutUser").get(isAuthJWT, logoutUser)
+router.route("/getuser/:id").get(isAuthJWT,getUserByID)
 router.route("/viewUser").get(isAuthJWT,authorizeRoles("Admin"),viewUser)
 router.route("/addCategory").post(isAuthJWT,authorizeRoles("Admin"),addCategory)
 router.route("/deleteCategory/:id").delete(isAuthJWT,authorizeRoles("Admin"),deleteCategory)

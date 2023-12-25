@@ -20,6 +20,9 @@ const userSchema = new mongoose.Schema({
     "role":{
         type:String,
         default: "User"
+    },
+    "activeToken":{
+        type:String,
     }
 })
 const User = mongoose.model("User", userSchema)

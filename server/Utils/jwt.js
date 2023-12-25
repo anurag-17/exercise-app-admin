@@ -16,38 +16,51 @@ exports.verifyToken = (token) => {
         return decoded;
     } catch (error) {
         // Handle invalid/expired tokens here
+        console.log(error);
         return null;
     }
 }
-exports.isAuthJWT = (async (req, res, next) => {
-    const authHeader = req.headers.authorization;
-    let token = '';
+exports.isAuthJWT = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  let token = '';
 
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      token = authHeader.slice(7);
-    } else {
-        token = authHeader
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    token = authHeader.slice(7);
+  } else {
+    token = authHeader;
+  }
+
+  if (!token) {
+    return res.status(401).json({ message: "Please login to access this resource" });
+  }
+
+  try {
+    const decodedData = jwt.verify(token, process.env.jwtKey);
+
+    req.user = await User.findOne({ email: decodedData?.email });
+
+    if (!req.user) {
+      req.user = await Admin.findOne({ email: decodedData?.email });
     }
-    // console.log(token);
-    if (!token) {
-      return res
-        .status(401)
-        .json({ message: "Please login to access this resource" });
-    } else {
-      const decodedData = jwt.verify(token, process.env.jwtKey);
-    //   console.log(decodedData);
-    if (!decodedData) {
-        return res
-        .status(HttpStatus.BAD_REQUEST)
-        .json(StatusMessage.USER_NOT_FOUND);
-      }
-      req.user = await User.findOne({email:decodedData?.email});
-      if (req.user === null) {
-        req.user = await Admin.findOne({email:decodedData?.email});
-      }
+    if (req.user.activeToken  && req.user.activeToken === token) {
       next();
+    } else {
+      return res.status(401).json({ message: 'Token expired, please login again' });
     }
-  });
+
+    
+  } catch (error) {
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({ message: 'Token expired, please login again' });
+    } else if (error.name === 'JsonWebTokenError') {
+      return res.status(401).json({ message: 'Invalid token' });
+    } else {
+      console.error('Other error:', error);
+      return res.status(500).json({ message: 'Server error' });
+    }
+  }
+};
+
 
 // auth role
 exports.authorizeRoles = (...roles) => {

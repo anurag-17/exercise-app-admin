@@ -14,6 +14,9 @@ const adminSchema = new mongoose.Schema({
     "role":{
         type:String,
         default: "Admin"
+    },
+    "activeToken":{
+        type:String
     }
 })
 const Admin = mongoose.model("Admin", adminSchema)

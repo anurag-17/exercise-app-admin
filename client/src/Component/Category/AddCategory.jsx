@@ -16,6 +16,7 @@ const AddCategory = ({ closeModal, refreshdata }) => {
     const [error, setError] = useState("");
     const [imageDisable, setImageDisable] = useState(false)
     const [videoDisable, setVideoDisable] = useState(false)
+    const [imageUpload, setImageUpload] = useState(false)
 
     const InputHandler = (e) => {
         if (e.target.name === "file") {
@@ -35,9 +36,12 @@ const AddCategory = ({ closeModal, refreshdata }) => {
         if (image == "" || image == undefined) {
 
             return toast.warn("Please select file.")
+
         }
 
         try {
+        setImageUpload(true)
+
             const response = await axios.post('api/auth/uploadImage', image, {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -49,10 +53,12 @@ const AddCategory = ({ closeModal, refreshdata }) => {
                 // console.log('Category added:', response?.data);
                 setFormData({ ...formData, ['file']: response?.data?.url })
                 setImageDisable(true)
+                setImageUpload(false)
             }
             else {
                 setFormData({ ...formData, ['file']: "" })
                 setImageDisable(false)
+                setImageUpload(false)
 
             }
         } catch (error) {
@@ -171,8 +177,8 @@ const AddCategory = ({ closeModal, refreshdata }) => {
                             <div className="">
                                 <button className={`focus-visible:outline-none  text-white text-[13px] px-4 py-1 rounded
                                 ${imageDisable ? "bg-[green]" : "bg-[#070708bd]"}`} type="button"
-                                    onClick={uploadImage} disabled={imageDisable}>
-                                    {imageDisable ? "Uploaded" : "Upload"}
+                                    onClick={uploadImage} disabled={imageDisable || imageUpload}>
+                                    {imageDisable ? "Uploaded" : imageUpload ? "Loading.." : "Upload"}
                                 </button>
                             </div>
                         </div>

@@ -18,6 +18,7 @@ const HttpStatus = {
 const jwt = require("jsonwebtoken");
 const WatchTime = require("../Model/WatchTime");
 const Feedback = require("../Model/Feedback");
+const { log } = require("console");
 const StatusMessage = {
   INVALID_CREDENTIALS: "Invalid credentials.",
   INVALID_EMAIL_PASSWORD: "Please provide email and password.",
@@ -72,7 +73,7 @@ exports.addAdmin = async (req, res) => {
 
     const result = await adminData.save();
 
-    console.log(result); // Log the result for debugging, avoid exposing in production
+    // console.log(result); // Log the result for debugging, avoid exposing in production
 
     return res.status(HttpStatus.OK).json(result);
   } catch (error) {
@@ -103,6 +104,8 @@ exports.adminLogin = async (req, res) => {
 
     if (isPasswordMatch) {
       const token = generateToken({ email: admin.email });
+      await Admin.findByIdAndUpdate({_id:admin._id?.toString()},{ activeToken: token}, { new: true })
+
       return res.status(HttpStatus.OK).json({
         message: `Welcome ${admin.email}`,
         token: token,
@@ -111,6 +114,7 @@ exports.adminLogin = async (req, res) => {
       return res.status(HttpStatus.UNAUTHORIZED).json(StatusMessage.INVALID_CREDENTIALS);
     }
   } catch (error) {
+    
     return res.status(HttpStatus.SERVER_ERROR).json(StatusMessage.SERVER_ERROR);
   }
 };
@@ -168,6 +172,8 @@ exports.userLogin = async (req, res) => {
 
     if (isPasswordMatch) {
       const token = generateToken({ email: user.email });
+    
+      await User.findByIdAndUpdate({_id:user._id?.toString()},{ activeToken: token}, { new: true })
       return res.status(HttpStatus.OK).json({
         message: `Welcome ${user.email}`,
         token: token,
@@ -177,9 +183,53 @@ exports.userLogin = async (req, res) => {
       return res.status(HttpStatus.UNAUTHORIZED).json(StatusMessage.INVALID_CREDENTIALS);
     }
   } catch (error) {
+    console.log(error);
     return res.status(HttpStatus.SERVER_ERROR).json(StatusMessage.SERVER_ERROR);
   }
 };
+exports.logoutUser = async(req, res)=>{
+  try {
+    const  authHeader  = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.slice(7);
+    } else {
+      token = authHeader;
+    }
+  
+    if (!token) {
+      return res.status(401).json({ message: "Please login to access this resource" });
+    }
+    const decodedData = jwt.verify(token, process.env.jwtKey);
+     const userData = await User.findOne({ email: decodedData?.email });
+     if (userData.activeToken  && userData.activeToken === token) {
+       const user = await User.findOneAndUpdate(
+         { email: decodedData.email, activeToken: token },
+         { $unset: { activeToken: "" } }, // Unset the token
+         { new: true }
+       );
+       if (!user) {
+        return res.status(401).json({ message: 'Invalid session or token, please login again' });
+      }
+      return res.status(HttpStatus.OK).json({
+        message: `${userData.email} is Logout Successfully`
+      });
+    } else {
+      return res.status(401).json({ message: 'Token expired, please login again' });
+    }
+
+  } catch (error) {
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({ message: 'Token expired, please login again' });
+    } else if (error.name === 'JsonWebTokenError') {
+      return res.status(401).json({ message: 'Invalid token' });
+    } else {
+      console.error('Other error:', error);
+      return res.status(500).json({ message: 'Server error' });
+    }
+  }
+}
+
+
 
 
 exports.deleteUser = async (req, res) => {
@@ -237,6 +287,22 @@ exports.updateUser = async (req, res) => {
     return res.status(HttpStatus.BAD_REQUEST).json("Error updating user.");
   }
 };
+
+exports.getUserByID = async(req, res)=>{
+  try {
+    const _id = req.params.id;
+    console.log(_id);
+    const userData = await User.findById(_id) 
+    if (!userData) {
+      return res.status(HttpStatus.INVALID).json(StatusMessage.NOT_FOUND);
+    }
+     return res.status(HttpStatus.OK).json(userData) 
+    
+  } catch (error) {
+    console.error(error);
+    return res.status(HttpStatus.BAD_REQUEST).json("Error fetching users.");
+  }
+}
 
 exports.viewUser = async (req, res) => {
   try {
@@ -349,7 +415,7 @@ exports.uploadImage = async (req, res, next) => {
 //     const uploadData = await s3.createMultipartUpload(uploadParams).promise();
 //     const uploadId = uploadData.UploadId;
 
-//     const partSize = 5 * 1024 * 1024; // 5MB part size (adjust as needed)
+//     const partSize = 5  1024  1024; // 5MB part size (adjust as needed)
 //     const partCount = Math.ceil(size / partSize);
 //     const parts = [];
 
@@ -548,7 +614,7 @@ exports.forgotPwd = async (req, res) => {
   }
   const token = generateToken({ email: user.email });
   const mailOptions = {
-    from: "akash.hardia@gmail.com",
+    from: "mailto:akash.hardia@gmail.com",
     to: user.email,
     subject: "Reset Password Link",
     text: `<h2>Hello! ${user.name} </h2>
@@ -709,6 +775,7 @@ exports.changeUserPwd = async (req, res) => {
   }
 }
 
+
 exports.changeAdminPwd = async (req, res) => {
   const { oldPassword, newPassword } = req.body
   const authHeader = req.headers.authorization;
@@ -840,8 +907,8 @@ exports.addfeedBack = async (req, res) => {
     if (result) {
       try {
         const mailOptions = {
-          from: "akash.hardia@gmail.com",
-          to: "akash.hardia@gmail.com",
+          from: "mailto:akash.hardia@gmail.com",
+          to: "mailto:akash.hardia@gmail.com",
           subject: "NOTIFICATION - New Feedback!",
           text: `
             <html>
