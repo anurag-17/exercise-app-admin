@@ -29,7 +29,7 @@ const AllVideosPopup = ({ data }) => {
           <div className="border border-[#407cb892] rounded-[6px] p-4 w-auto">
             <video
               controls
-              className="w-full h-[150px] bo    rder border-[#f3f3f3] rounded"
+              className="w-full h-[150px] border border-[#f3f3f3] rounded"
             >
               <source src={items} type="video/mp4" />
               Your browser does not support the video tag.
@@ -49,7 +49,7 @@ const AllVideosPopup = ({ data }) => {
       {/*---------- Video popup---------- */}
 
       <Transition appear show={isShowVideo} as={Fragment}>
-        <Dialog as="div" className="relative z-10" onClose={closeVideoPopup}>
+        <Dialog as="div" className="relative z-30" onClose={closeVideoPopup}>
           <Transition.Child
             as={Fragment}
             enter="ease-out duration-300"
@@ -59,7 +59,7 @@ const AllVideosPopup = ({ data }) => {
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
-            <div className="fixed inset-0 bg-black bg-opacity-25" />
+            <div className="fixed inset-0  bg-black/70" />
           </Transition.Child>
 
           <div className="fixed inset-0 overflow-y-auto">

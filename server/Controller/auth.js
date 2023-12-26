@@ -464,16 +464,16 @@ exports.addCategory = async (req, res) => {
       return res.status(HttpStatus.BAD_REQUEST).json("Missing some data.");
     }
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(HttpStatus.UNAUTHORIZED).json("Unauthorized access.");
-    }
+    // if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    //   return res.status(HttpStatus.UNAUTHORIZED).json("Unauthorized access.");
+    // }
 
-    const token = authHeader.slice(7); // Extracting the token
+    // const token = authHeader.slice(7); // Extracting the token
 
-    // Your token validation logic here (verifyToken function)
-    if (!verifyToken(token)) {
-      return res.status(HttpStatus.UNAUTHORIZED).json("Invalid token.");
-    }
+    // // Your token validation logic here (verifyToken function)
+    // if (!verifyToken(token)) {
+    //   return res.status(HttpStatus.UNAUTHORIZED).json("Invalid token.");
+    // }
 
     // Creating the category
     const categoryData = new Category({ category, file, video });

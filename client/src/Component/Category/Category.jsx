@@ -344,12 +344,12 @@ const Category = () => {
             getAllData={getAllData}
           />
         )}
-      </section>
+      </section>                          
 
       {/*---------- Video popup---------- */}
 
       <Transition appear show={openVideo} as={Fragment}>
-        <Dialog as="div" className="relative z-10" onClose={closeVideoModal}>
+        <Dialog as="div" className="relative z-20" onClose={closeVideoModal}>
           <Transition.Child
             as={Fragment}
             enter="ease-out duration-300"
@@ -359,10 +359,10 @@ const Category = () => {
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
-            <div className="fixed inset-0 bg-black bg-opacity-25" />
+            <div className="fixed inset-0  bg-black/70"  aria-hidden="true"/>
           </Transition.Child>
 
-          <div className="fixed inset-0 overflow-y-auto">
+          <div className="fixed inset-0  w-screen  overflow-y-auto">
             <div className="flex min-h-full items-center justify-center p-4 text-center">
               <Transition.Child
                 as={Fragment}
@@ -394,7 +394,7 @@ const Category = () => {
 
       {/*---------- Add popup---------- */}
       <Transition appear show={isOpen} as={Fragment}>
-        <Dialog as="div" className="relative z-10" onClose={closeModal}>
+        <Dialog as="div" className="relative z-10" onClose={() => {}}>
           <Transition.Child
             as={Fragment}
             enter="ease-out duration-300"
@@ -404,7 +404,7 @@ const Category = () => {
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
-            <div className="fixed inset-0 bg-black bg-opacity-25" />
+            <div className="fixed inset-0 bg-black/70" />
           </Transition.Child>
 
           <div className="fixed inset-0 overflow-y-auto">
@@ -439,7 +439,7 @@ const Category = () => {
       {/*---------- Edit popup---------- */}
 
       <Transition appear show={openEdit} as={Fragment}>
-        <Dialog as="div" className="relative z-10" onClose={closeEditModal}>
+        <Dialog as="div" className="relative z-10" onClose={() => {}}>
           <Transition.Child
             as={Fragment}
             enter="ease-out duration-300"
@@ -449,7 +449,7 @@ const Category = () => {
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
-            <div className="fixed inset-0 bg-black bg-opacity-25" />
+            <div className="fixed inset-0 bg-black/70" />
           </Transition.Child>
 
           <div className="fixed inset-0 overflow-y-auto">
@@ -495,7 +495,7 @@ const Category = () => {
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
-            <div className="fixed inset-0 bg-black bg-opacity-25" />
+            <div className="fixed inset-0 bg-black/70" />
           </Transition.Child>
 
           <div className="fixed inset-0 overflow-y-auto">
@@ -540,7 +540,7 @@ const Category = () => {
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
-            <div className="fixed inset-0 bg-black bg-opacity-25" />
+            <div className="fixed inset-0 bg-black/70" />
           </Transition.Child>
 
           <div className="fixed inset-0 overflow-y-auto">
