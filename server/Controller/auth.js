@@ -907,8 +907,8 @@ exports.addfeedBack = async (req, res) => {
     if (result) {
       try {
         const mailOptions = {
-          from: "mailto:akash.hardia@gmail.com",
-          to: "mailto:akash.hardia@gmail.com",
+          from: "akash.hardia@gmail.com",
+          to: "akash.hardia@gmail.com",
           subject: "NOTIFICATION - New Feedback!",
           text: `
             <html>
