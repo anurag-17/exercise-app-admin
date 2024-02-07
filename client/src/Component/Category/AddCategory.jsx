@@ -115,7 +115,7 @@ const AddCategory = ({ closeModal, refreshdata }) => {
         e.preventDefault();
 
         if (formData.file == "" || formData.video.length < 1) {
-            toast.error("Please fill all feilds")
+            toast.error("Please fill all fields")
         }
         else {
             setLoading(true)
