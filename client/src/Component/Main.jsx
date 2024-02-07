@@ -88,7 +88,7 @@ const SideMenu = () => {
     return (
         <section className="">
             <div className="flex min-h-screen relative lg:static">
-                <div className="py-2 px-3  absolute top-4 left-2 flex flex-col gap-[5px] cursor-pointer lg:hidden"
+                <div className="z-[1] py-2 px-3  absolute top-4 left-2 flex flex-col gap-[5px] cursor-pointer lg:hidden"
                     onClick={() => setShowDrawer(true)}>
                     <div className="bg-black h-[2px] w-[20px]"></div>
                     <div className="bg-black h-[2px] w-[20px]"></div>
@@ -97,7 +97,7 @@ const SideMenu = () => {
 
 
                 <div className={`w-[300px] bg-[#1f2432] text-white lg:py-[40px] lg:px-[40px] px-[10px] py-[10px] drawer
-                 ${showDrawer ? "block  absolute top-0 left-0 min-h-screen is-show" : "hidden lg:block"}`} >
+                 ${showDrawer ? "block z-[1] absolute top-0 left-0 min-h-screen is-show" : "hidden lg:block"}`} >
                     <div className="relative text-white  flex flex-col gap-[5px] cursor-pointer lg:hidden  text-right mr-3 mt-2"
                         onClick={() => setShowDrawer(false)}>
                         <div className=""> <CloseIcon/> </div>
