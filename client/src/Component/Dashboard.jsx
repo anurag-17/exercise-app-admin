@@ -2,8 +2,8 @@ import React, { Fragment } from "react";
 import { Menu, Transition } from "@headlessui/react";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
-
-import dash_img from "../assets/dashboard.svg";
+// import dashboardImage from "../assets/dashboardImage"
+import dash_img from "../assets/dashboard.webp";
 import PasswordIcon from "./Svg/PasswordIcon";
 import ProfileIcon from "./Svg/ProfileIcon";
 import SignOutIcon from "./Svg/SignOutIcon";
@@ -70,6 +70,9 @@ const Dashboard = () => {
           </div>
           <div className="w-[30%]">
             <img src={dash_img} alt="welcome dashboard" className="w-full" />
+            <div>
+             
+            </div>
           </div>
         </div>
       </section>
