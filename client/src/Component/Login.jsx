@@ -55,7 +55,8 @@ const Login = () => {
   return (
     <>
       <div className="flex items-center justify-center lg:min-h-screen  ">
-      {/* <iframe style={{width:"100vw", height:"100vh"}} src="http://54.144.29.48:3000/create/asst_jQ85u4RIE6j4PPjLXwiAvgTo"/> */}
+    {/* <iframe style={{width:"100vw", height:"100vh"}} src="http://54.144.29.48:3000/create/asst_jQ85u4RIE6j4PPjLXwiAvgTo"/> */}
+
         <div className="md:px-[50px] w-full mx-auto">
           <div className="relative flex flex-col 2xl:gap-x-20 xl:gap-x-10 gap-x-7 min-h-screen justify-center lg:shadow-none  items-center lg:flex-row space-y-8 md:space-y-0 w-[100%] px-[10px]bg-white lg:px-[40px] py-[20px] md:py-[40px] ">
             <div className="w-[100%] lg:w-[60%] xl:w-[50%]">
