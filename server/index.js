@@ -25,7 +25,7 @@ if (process.env.NODE_ENV === "dev") {
       res.send("API is running..");
     });
   }
-const PORT = process.env.PORT || 80; // Use 3000 if process.env.PORT is not defined
+const PORT = process.env.PORT || 5000; // Use 3000 if process.env.PORT is not defined
 
 app.listen(PORT, () => {
     console.log(`Running on port ${PORT}`);
