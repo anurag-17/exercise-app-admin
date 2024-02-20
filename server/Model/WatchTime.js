@@ -1,4 +1,5 @@
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
+const User = require("./User");
 
 const watchTimeSchema = new mongoose.Schema({
     "URL":{
@@ -11,7 +12,7 @@ const watchTimeSchema = new mongoose.Schema({
         
     },
     "userID":{
-        type:String,
+        type:mongoose.Schema.Types.ObjectId, ref: User,
         required:true
     }
 })
