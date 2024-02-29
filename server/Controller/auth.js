@@ -123,7 +123,7 @@ exports.adminLogin = async (req, res) => {
 
 exports.addUser = async (req, res) => {
   try {
-    const { name, contact, email, password } = req.body;
+    const { name, contact, email, password ,dob,gender,weight,height,profile} = req.body;
 
     if (!name || !contact || !email || !password) {
       return res.status(HttpStatus.BAD_REQUEST).json(StatusMessage.MISSING_DATA);
@@ -131,7 +131,7 @@ exports.addUser = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const userData = new User({ name, contact, email, password: hashedPassword });
+    const userData = new User({ name, contact, email, password: hashedPassword ,dob,gender,weight,height,profile});
 
     const result = await userData.save();
 
