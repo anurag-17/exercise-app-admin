@@ -1,4 +1,5 @@
 const mongoose = require("mongoose")
+const User = require("./User")
 
 const feedBackSchema = new mongoose.Schema({
     "name":{
@@ -22,7 +23,7 @@ const feedBackSchema = new mongoose.Schema({
        
     },
     "userID":{
-        type:String,
+        type:mongoose.Schema.Types.ObjectId, ref: User,
         required:[true],
        
     }
