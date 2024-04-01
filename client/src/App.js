@@ -9,6 +9,7 @@ import "react-toastify/dist/ReactToastify.css";
 import ResetPassword from "./Component/ForgotPassword/ResetPassword";
 import ForgotPassword from "./Component/ForgotPassword/ForgotPassword";
 import ChangePassword from "./Component/ChangePassword/Index";
+import PrivacyPolicy from "./Component/privacypolicy";
 
 
 
@@ -36,6 +37,8 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/change-password" element={<ChangePassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
+          <Route path="/privacy&policy" element={<PrivacyPolicy />} />
+
 
           <Route
             path="/admindashboard"
